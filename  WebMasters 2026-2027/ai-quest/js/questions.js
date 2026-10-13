@@ -1,0 +1,106 @@
+/* AI Quest Arcade — question bank. Based on the three learning modules.
+   c = concept, d = difficulty (1 easy … 3 hard), a = index of correct option. */
+window.AIQ_QUESTIONS = (function () {
+  const CONCEPTS = {
+    'what-is-ai': { label: 'What is AI?', mod: 'AI Foundations' },
+    'machine-learning': { label: 'Machine learning', mod: 'AI Foundations' },
+    'llms': { label: 'How chatbots work', mod: 'AI Foundations' },
+    'ai-limits': { label: 'What AI gets wrong', mod: 'AI Foundations' },
+    'tool-types': { label: 'AI tool types', mod: 'AI Tools & Techniques' },
+    'prompting': { label: 'Prompt crafting', mod: 'AI Tools & Techniques' },
+    'study-skills': { label: 'AI study coach', mod: 'AI Tools & Techniques' },
+    'verification': { label: 'Verifying AI answers', mod: 'AI Tools & Techniques' },
+    'integrity': { label: 'Academic integrity', mod: 'Ethical AI Use' },
+    'bias': { label: 'Bias & fairness', mod: 'Ethical AI Use' },
+    'privacy': { label: 'Privacy & data', mod: 'Ethical AI Use' },
+    'deepfakes-credit': { label: 'Deepfakes & credit', mod: 'Ethical AI Use' }
+  };
+
+  const Q = [
+    /* ---------- What is AI? ---------- */
+    { c: 'what-is-ai', d: 1, q: 'Which best describes artificial intelligence?', o: ['Computers doing tasks that normally need human intelligence', 'Any program that runs on the internet', 'Robots with human feelings', 'A faster type of calculator'], a: 0, e: 'AI is computer systems that perform tasks like recognizing speech, translating, or making decisions that usually require human intelligence.' },
+    { c: 'what-is-ai', d: 1, q: 'All AI systems in use today are best described as…', o: ['Artificial general intelligence', 'Narrow AI built for specific tasks', 'Conscious machines', 'Self-aware robots'], a: 1, e: 'Today\'s AI is narrow: very good at specific jobs. General AI (AGI) matching humans across everything does not exist yet.' },
+    { c: 'what-is-ai', d: 2, q: 'What is the key difference between traditional software and machine-learning AI?', o: ['Traditional software is always slower', 'ML learns patterns from data instead of only following hand-written rules', 'ML never makes mistakes', 'Traditional software needs the internet'], a: 1, e: 'Traditional programs follow rules a human wrote. ML systems learn their own rules from examples.' },
+    { c: 'what-is-ai', d: 2, q: 'Which of these is an example of AI?', o: ['A calculator adding two numbers', 'A hallway light switch', 'A streaming app recommending shows based on what you watched', 'A timer-based thermostat set to 70°F at 6 AM'], a: 2, e: 'Recommendation systems learn from behavior data. The others follow fixed rules with no learning.' },
+    { c: 'what-is-ai', d: 3, q: 'Which milestone is correctly matched?', o: ['1997: Deep Blue beat chess champion Garry Kasparov', '1956: ChatGPT launched', '2016: AlphaGo lost its first game of chess', '1980: the term "AI" was invented'], a: 0, e: 'IBM\'s Deep Blue defeated Kasparov in 1997. The term "artificial intelligence" dates to the 1956 Dartmouth workshop, and AlphaGo beat Go champion Lee Sedol in 2016.' },
+
+    /* ---------- Machine learning ---------- */
+    { c: 'machine-learning', d: 1, q: 'In machine learning, what is "training data"?', o: ['The examples a model learns from', 'The model\'s final answer', 'A type of keyboard', 'The code that runs the website'], a: 0, e: 'Training data is the set of examples the model studies to find patterns.' },
+    { c: 'machine-learning', d: 1, q: 'Teaching a model with photos labeled "cat" or "dog" is which type of learning?', o: ['Supervised learning', 'Unsupervised learning', 'Reinforcement learning', 'Random learning'], a: 0, e: 'Supervised learning uses examples that already come with the right answers (labels).' },
+    { c: 'machine-learning', d: 2, q: 'A robot learns to walk by trying moves and getting rewards when it stays upright. This is…', o: ['Supervised learning', 'Reinforcement learning', 'Unsupervised learning', 'Copy-and-paste learning'], a: 1, e: 'Reinforcement learning is trial and error guided by rewards and penalties.' },
+    { c: 'machine-learning', d: 2, q: 'What are "weights" in a neural network?', o: ['How heavy the computer is', 'Numbers that control how strongly each input affects the output', 'The size of the training file', 'Passwords for the model'], a: 1, e: 'Weights say how important each input is. Training adjusts them to reduce errors.' },
+    { c: 'machine-learning', d: 3, q: 'A model is trained mostly on photos taken in bright daylight. What will probably happen with night photos?', o: ['It will work perfectly', 'It will likely perform worse because its data was narrow', 'It will refuse to run', 'It will automatically learn night vision'], a: 1, e: 'Models are only as good as their data. Unbalanced or narrow training data leads to weaker results in situations it rarely saw.' },
+
+    /* ---------- LLMs ---------- */
+    { c: 'llms', d: 1, q: 'What does a large language model (LLM) fundamentally do?', o: ['Predicts the next token of text', 'Searches a database for exact facts', 'Thinks and feels like a person', 'Types answers written by humans in real time'], a: 0, e: 'LLMs generate text one token at a time by predicting what comes next based on patterns learned in training.' },
+    { c: 'llms', d: 1, q: 'What is a "token"?', o: ['A small piece of text such as a word or part of a word', 'A game coin', 'A password', 'A type of image file'], a: 0, e: 'Language models read and write tokens, small chunks of text.' },
+    { c: 'llms', d: 2, q: 'What does a HIGH temperature setting do?', o: ['Makes responses more random and creative', 'Makes responses identical every time', 'Makes the answer more accurate', 'Speeds up the internet'], a: 0, e: 'Higher temperature makes less-likely tokens more likely to be chosen, so output is more varied.' },
+    { c: 'llms', d: 2, q: 'The "context window" of a chatbot is…', o: ['The browser window it runs in', 'How much text it can consider at one time', 'Its privacy setting', 'The number of users online'], a: 1, e: 'The context window is the amount of text (your conversation so far) the model can take into account.' },
+    { c: 'llms', d: 3, q: 'Why can an LLM sound confident but be wrong?', o: ['It generates plausible-sounding text and has no built-in way to check truth', 'It always lies on purpose', 'Wrong answers are programmed in', 'It only guesses on Fridays'], a: 0, e: 'Fluent text is not the same as true text. LLMs produce what fits the pattern, not what has been fact-checked.' },
+
+    /* ---------- AI limits ---------- */
+    { c: 'ai-limits', d: 1, q: 'What is an AI "hallucination"?', o: ['When the AI produces false information that sounds believable', 'When the screen flickers', 'When the AI falls asleep', 'A very fast answer'], a: 0, e: 'Hallucinations are made-up facts, quotes, or sources presented confidently.' },
+    { c: 'ai-limits', d: 1, q: 'A chatbot cites an article you cannot find anywhere. What should you suspect?', o: ['It may be an invented source', 'The internet is broken', 'It must be a secret document', 'Your computer is too old'], a: 0, e: 'Fake citations are a classic hallucination. Always find and open the real source.' },
+    { c: 'ai-limits', d: 2, q: 'Why might a model not know about last week\'s news?', o: ['It only knows data up to its training cutoff unless connected to search', 'It ignores news on purpose', 'News is always wrong', 'It deletes old news'], a: 0, e: 'Models learn from data up to a cutoff date. Without search tools they can\'t know newer events.' },
+    { c: 'ai-limits', d: 2, q: 'Which is the best way to treat AI output?', o: ['As a first draft from a helpful but unreliable assistant', 'As a final authority', 'As always wrong', 'As a legal document'], a: 0, e: 'Use AI as a starting point, and verify anything important.' },
+    { c: 'ai-limits', d: 3, q: 'An AI states a statistic with a very specific percentage and no source. The BEST next step is to…', o: ['Trace the number to its original study or reliable source', 'Use it because it is specific', 'Ask the AI "are you sure?" and accept the reply', 'Round it to the nearest 10'], a: 0, e: 'Specific numbers can still be invented. Asking the same AI if it is sure does not verify anything. Trace the claim to a real source.' },
+
+    /* ---------- Tool types ---------- */
+    { c: 'tool-types', d: 1, q: 'Which type of tool checks grammar and clarity in text YOU wrote?', o: ['Writing helper', 'Image generator', 'Coding assistant', 'Search engine'], a: 0, e: 'Writing helpers give feedback on your own draft, as long as your teacher\'s policy allows it.' },
+    { c: 'tool-types', d: 1, q: 'Image generators create pictures from…', o: ['Text descriptions', 'Your heartbeat', 'Random sounds only', 'Nothing at all'], a: 0, e: 'You describe what you want and the model generates an image. Label AI-made images.' },
+    { c: 'tool-types', d: 2, q: 'A research tool that summarizes sources is most useful when it…', o: ['Shows links so you can open the original sources', 'Hides where info came from', 'Replaces reading entirely', 'Only gives opinions'], a: 0, e: 'Source links let you verify and read the originals, since summaries can miss nuance.' },
+    { c: 'tool-types', d: 2, q: 'Before using any new AI tool for school you should…', o: ['Check your school\'s policy and the tool\'s age and privacy rules', 'Paste in your personal info to test it', 'Assume it is allowed', 'Share your password with it'], a: 0, e: 'Policies and age requirements vary, so check them first.' },
+    { c: 'tool-types', d: 3, q: 'A coding helper suggests a fix you do not understand. The most learning-friendly move is to…', o: ['Ask it to explain why the bug happened, then try the fix yourself', 'Copy it and move on', 'Ask it to write the entire project', 'Delete your code'], a: 0, e: 'Copying code you don\'t understand builds no skill. Ask for the reasoning, then apply it yourself.' },
+
+    /* ---------- Prompting ---------- */
+    { c: 'prompting', d: 1, q: 'Which prompt is strongest?', o: ['"Help with history"', '"Act as a history tutor. I\'m in 10th grade. Explain the causes of WWI in 5 bullets, under 120 words."', '"WWI"', '"Tell me everything"'], a: 1, e: 'It names a role, context, task, format, and constraints.' },
+    { c: 'prompting', d: 1, q: 'In R-T-C-F-C, what does the "F" stand for?', o: ['Format', 'Fact', 'Fast', 'Fix'], a: 0, e: 'Role, Task, Context, Format, Constraints. Format describes how the answer should look.' },
+    { c: 'prompting', d: 2, q: '"Keep it under 100 words and avoid jargon" is an example of…', o: ['A constraint', 'A role', 'A hallucination', 'Context'], a: 0, e: 'Constraints set limits and rules for the answer.' },
+    { c: 'prompting', d: 2, q: 'The AI\'s first answer isn\'t quite right. What should you do?', o: ['Follow up with more specific instructions', 'Give up on AI', 'Assume it is correct', 'Retype the same prompt over and over'], a: 0, e: 'Iterating with follow-ups like "make it simpler" is a core prompting skill.' },
+    { c: 'prompting', d: 3, q: 'Which addition would improve this prompt most? "Explain photosynthesis."', o: ['"I\'m a 9th grader; use 4 bullet points and one real-life analogy."', '"Please please explain."', '"Explain it fast."', '"Explain photosynthesis, photosynthesis."'], a: 0, e: 'Adding context (who you are) and format (bullets, analogy) gives the AI what it needs to tailor the answer.' },
+
+    /* ---------- Study skills ---------- */
+    { c: 'study-skills', d: 1, q: 'Which is the best way to use AI for studying?', o: ['Ask it to quiz you and grade your answers', 'Have it write your assignment', 'Copy its answers on a test', 'Let it do all your homework'], a: 0, e: 'Quizzing keeps you doing the thinking and shows what you still need to learn.' },
+    { c: 'study-skills', d: 1, q: 'The "who did the thinking?" test asks…', o: ['Could you explain your final work out loud without the AI?', 'Did the AI sound smart?', 'How fast was the answer?', 'Did the AI use big words?'], a: 0, e: 'If you could not explain it yourself, the AI did too much of the thinking.' },
+    { c: 'study-skills', d: 2, q: 'You ask AI for feedback on your paragraph (and your teacher allows it). Which request keeps the work yours?', o: ['"Give 3 suggestions but don\'t rewrite it."', '"Rewrite this so I can submit it."', '"Write a new paragraph."', '"Make it sound like a different person wrote it."'], a: 0, e: 'Asking for suggestions and doing the rewriting yourself keeps your voice and your learning.' },
+    { c: 'study-skills', d: 2, q: '"Explain it back" as a study move means…', o: ['You explain the concept to the AI and ask it to find gaps', 'The AI explains and you copy it', 'You ask for the answer key', 'You skip the topic'], a: 0, e: 'Teaching a concept back is a powerful way to find what you don\'t yet understand.' },
+    { c: 'study-skills', d: 3, q: 'Which is the best prompt for building a study plan?', o: ['"My test is in 7 days on chapters 4–6. I have 45 minutes each evening. Make a day-by-day plan with review sessions."', '"Make me smart."', '"Plan."', '"Do my homework for the week."'], a: 0, e: 'It gives a deadline, topics, available time, and requested format, so the plan will be specific and usable.' },
+
+    /* ---------- Verification ---------- */
+    { c: 'verification', d: 1, q: 'In SIFT, what does the first letter "S" stand for?', o: ['Stop', 'Search', 'Share', 'Skip'], a: 0, e: 'Stop and pause before copying or sharing a claim.' },
+    { c: 'verification', d: 1, q: 'You get an AI answer for a project. Before relying on it you should…', o: ['Check it with a trusted source', 'Share it right away', 'Assume it is right if it is long', 'Ignore the facts'], a: 0, e: 'Verifying with reliable sources is a core habit.' },
+    { c: 'verification', d: 2, q: 'In SIFT, what does "T" mean?', o: ['Trace claims back to the original source', 'Trust the AI', 'Type it twice', 'Translate it'], a: 0, e: 'Trace quotes, numbers, and claims to where they originally came from.' },
+    { c: 'verification', d: 2, q: 'Two different AI tools give conflicting answers. This is…', o: ['A signal to dig deeper and check reliable sources', 'Proof both are right', 'Proof AI is useless', 'A reason to pick randomly'], a: 0, e: 'Disagreement is a useful warning that something needs checking.' },
+    { c: 'verification', d: 3, q: 'Which is the strongest way to confirm an AI-provided citation?', o: ['Find the source in a library database or the publisher\'s site and read it', 'Ask the AI to confirm the citation', 'Check that it looks formatted correctly', 'See if the author name sounds familiar'], a: 0, e: 'Formatting and AI confirmation prove nothing. Open the real source yourself.' },
+
+    /* ---------- Integrity ---------- */
+    { c: 'integrity', d: 1, q: 'Submitting AI-written work as if you wrote it is…', o: ['Academic dishonesty', 'Smart studying', 'Always allowed', 'A kind of citation'], a: 0, e: 'Your submitted work should reflect your own learning. Passing off AI work as yours is plagiarism.' },
+    { c: 'integrity', d: 1, q: 'Your teacher\'s AI policy is unclear. What should you do?', o: ['Ask your teacher before you submit', 'Guess', 'Use AI and hope it is fine', 'Hide that you used it'], a: 0, e: 'When unsure, ask first, not after.' },
+    { c: 'integrity', d: 2, q: 'Which AI use is most likely "green light" (usually fine)?', o: ['Asking AI to explain a concept you did not understand', 'Using AI on a test marked "no AI"', 'Submitting an AI essay', 'Inventing sources'], a: 0, e: 'Using AI as a tutor is generally encouraged. Breaking explicit rules or hiding AI work is not.' },
+    { c: 'integrity', d: 2, q: 'You used AI to brainstorm topics. The honest move is to…', o: ['Disclose it following your teacher\'s rules', 'Say nothing', 'Delete your chat history only', 'Claim the ideas came from a book'], a: 0, e: 'Disclose AI help as the assignment rules require.' },
+    { c: 'integrity', d: 3, q: 'Your teacher said "no AI" for a project, but a tiny bit of AI code help seems harmless. What is the right call?', o: ['Follow the rule, or ask the teacher if an exception is possible', 'Use it quietly since it is small', 'Use it and claim you did not', 'Ask a friend to use it for you'], a: 0, e: 'Explicit rules apply even to "small" help. Ask for permission rather than assuming.' },
+
+    /* ---------- Bias ---------- */
+    { c: 'bias', d: 1, q: 'Where does AI bias mainly come from?', o: ['Patterns in the human-made data and choices behind the system', 'The color of the computer', 'The weather', 'Random electricity'], a: 0, e: 'AI learns from human data and design choices, which can contain unfair patterns.' },
+    { c: 'bias', d: 1, q: 'A face-recognition system trained mostly on one group works worse on others. This shows…', o: ['Unbalanced training data can cause unfair results', 'AI is always fair', 'Faces are random', 'Cameras are broken'], a: 0, e: 'Representative data matters. Groups missing from the data pay the price.' },
+    { c: 'bias', d: 2, q: 'A hiring AI is trained on a company\'s past hiring decisions, which favored one group. The AI will likely…', o: ['Repeat that unfair pattern', 'Fix it automatically', 'Be perfectly neutral', 'Stop working'], a: 0, e: 'Historical bias in the data is copied, and can even be amplified, by the model.' },
+    { c: 'bias', d: 2, q: 'Which question helps spot bias in an AI system?', o: ['Who is in the data and who is missing?', 'How shiny is the logo?', 'How long is the answer?', 'Is it popular?'], a: 0, e: 'Asking who is represented in the training data reveals potential gaps.' },
+    { c: 'bias', d: 3, q: 'Who should be responsible for high-impact decisions such as who gets a job interview?', o: ['Humans, using AI only as one input', 'The AI alone', 'Nobody', 'Whoever built the chip'], a: 0, e: 'Humans must stay accountable for important decisions that affect people\'s opportunities.' },
+
+    /* ---------- Privacy ---------- */
+    { c: 'privacy', d: 1, q: 'Which is safest to paste into a public chatbot?', o: ['A general question about photosynthesis', 'Your home address', 'Your student ID', 'Your phone number'], a: 0, e: 'General questions contain no personal details.' },
+    { c: 'privacy', d: 1, q: 'What does it mean to "redact" information?', o: ['Replace or remove personal details before sharing', 'Add more details', 'Translate it', 'Print it'], a: 0, e: 'Swap real details for placeholders like [NAME] or [SCHOOL].' },
+    { c: 'privacy', d: 2, q: 'Why be careful about what you type into AI tools?', o: ['It may be stored, reviewed, or used to improve models depending on the service and settings', 'The AI will gossip', 'Typing is slow', 'It breaks the keyboard'], a: 0, e: 'Your inputs go to a company\'s servers. Check settings and keep personal data out.' },
+    { c: 'privacy', d: 2, q: 'Is it okay to upload a classmate\'s photo to an AI tool for fun without asking?', o: ['No, ask their permission first', 'Yes, always', 'Yes, if it is a good photo', 'Yes, if you crop it'], a: 0, e: 'Respect other people\'s privacy. Get permission before sharing their images or info.' },
+    { c: 'privacy', d: 3, q: 'A good "screenshot rule" for privacy is…', o: ['If you wouldn\'t post it publicly, don\'t paste it into AI', 'Always take screenshots of chats', 'Screenshots are private', 'Paste everything then delete it'], a: 0, e: 'Treat AI chats as potentially visible and keep private things out.' },
+
+    /* ---------- Deepfakes & credit ---------- */
+    { c: 'deepfakes-credit', d: 1, q: 'What is a deepfake?', o: ['Synthetic media that falsely shows someone saying or doing something', 'A very deep neural network', 'A password', 'A computer virus'], a: 0, e: 'Deepfakes are AI-made fakes of a real person\'s face or voice.' },
+    { c: 'deepfakes-credit', d: 1, q: 'If AI helped with your work, a good rule is to…', o: ['Say so and cite it the way your teacher asks', 'Hide it', 'Remove your name', 'Only mention it if caught'], a: 0, e: 'If AI helped, disclose and cite it.' },
+    { c: 'deepfakes-credit', d: 2, q: 'You see a shocking video of a public figure online. What is a smart first step?', o: ['Check who posted it and look for the same story from trusted outlets', 'Share it immediately', 'Assume it is real', 'Comment angrily'], a: 0, e: 'Verify before you share. Check the source and look for trusted coverage.' },
+    { c: 'deepfakes-credit', d: 2, q: 'Creating a fake video to embarrass a classmate is…', o: ['Harmful and may break school rules or the law', 'Just a joke', 'A creative project', 'Allowed if it is quick'], a: 0, e: 'Deceptive fakes of real people can seriously hurt them.' },
+    { c: 'deepfakes-credit', d: 3, q: 'Which is a reasonable way to give credit for AI help?', o: ['An APA/MLA-style citation or a short disclosure statement naming the tool, date, and how you used it', 'Never mention it', 'List the AI as the author of your whole paper', 'Only cite it if the teacher notices'], a: 0, e: 'Name the tool, the date, and how it helped, following the format your teacher requires.' }
+  ];
+  Q.forEach((x, i) => { x.id = 'q' + (i + 1); });
+  return { CONCEPTS, Q };
+})();

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Quest: Learn AI, Use It Wisely</title>
+  <meta name="description" content="AI Quest is an interactive AI learning portal for high school students: learn how AI works, practice with AI tools, and use AI ethically, with XP, badges and progress tracking.">
+  <meta name="theme-color" content="#0b1020">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/arcade.css">
+  <script>
+    /* Apply saved theme before paint to avoid a flash. */
+    try { var s = JSON.parse(localStorage.getItem('ai-quest-v1') || '{}'); if (s.theme) document.documentElement.setAttribute('data-theme', s.theme); } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip" href="#app">Skip to main content</a>
+
+  <header class="top no-print">
+    <div class="wrap top-in">
+      <a class="brand" href="#/home" aria-label="AI Quest home">
+        <svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6c63ff"/><stop offset="1" stop-color="#00d4b4"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="url(#lg)"/><g stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M18 20 L32 32 L46 20 M18 44 L32 32 L46 44 M18 20 V44 M46 20 V44"/></g><g fill="#fff"><circle cx="18" cy="20" r="4.5"/><circle cx="18" cy="44" r="4.5"/><circle cx="46" cy="20" r="4.5"/><circle cx="46" cy="44" r="4.5"/><circle cx="32" cy="32" r="5.5"/></g></svg>
+        <span>AI&nbsp;Quest</span>
+      </a>
+      <button class="nav-btn" id="navBtn" aria-expanded="false" aria-controls="nav" aria-label="Toggle menu">☰</button>
+      <nav class="nav" id="nav" aria-label="Main">
+        <a href="#/home" data-nav="home">Home</a>
+        <a href="#/modules" data-nav="modules">Modules</a>
+        <a href="#/arcade" data-nav="arcade">🎮 Arcade</a>
+        <a href="#/glossary" data-nav="glossary">Glossary</a>
+        <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
+      </nav>
+      <a class="xp-chip" id="xpChip" href="#/dashboard"></a>
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle theme">🌙</button>
+    </div>
+  </header>
+
+  <main id="app" tabindex="-1">
+    <noscript><div class="wrap sect"><h1>AI Quest needs JavaScript</h1><p>Please enable JavaScript to use this learning portal.</p></div></noscript>
+  </main>
+
+  <footer class="foot no-print">
+    <div class="wrap">
+      <p><b>AI Quest</b>: an interactive AI learning portal for grades 9–12.</p>
+      <p class="muted">Your progress is saved only in this browser. Nothing is sent to a server. Always follow your school's and teachers' AI-use policies. &copy; <span id="yr"></span></p>
+    </div>
+  </footer>
+
+  <div id="toasts" class="toasts no-print" aria-live="polite" aria-atomic="false"></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <script src="js/data.js"></script>
+  <script src="js/widgets.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/games.js"></script>
+  <script src="js/arcade.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
