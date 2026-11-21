@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1120">
+  <meta name="description" content="Free historical chart replay and local paper-trading simulator with public crypto candles and CSV market data import.">
+  <title>ReplayLab — Market Replay & Paper Trading</title>
+  <style>:root{color-scheme:dark;--bg:#0b1120;--panel:#111b2d;--panel2:#151f34;--border:#273247;--text:#e7ecf4;--muted:#8997ad;--blue:#4e89f9;--green:#22c99f;--red:#f06a76;--orange:#f2b96b;--brand:#71a8ff;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-synthesis:none}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.4;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}a{color:inherit;text-decoration:none}.app-shell{min-height:100vh;display:flex;flex-direction:column}.topbar{min-height:73px;background:#0f192b;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:20px;padding:10px 20px}.brand{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:800;letter-spacing:-.7px;white-space:nowrap}.brand-icon{display:grid;place-items:center;background:var(--blue);height:29px;width:29px;border-radius:8px;color:#fff;font-size:27px;font-weight:500}.brand-accent{color:#84b2ff}.brand-beta{font-size:9px;letter-spacing:1px;color:#a5b2cc;border:1px solid #304560;border-radius:4px;padding:4px 5px;margin-left:1px}.topbar-divider{width:1px;height:31px;background:var(--border)}.topbar-fields{display:flex;align-items:center;gap:10px;min-width:0}.field-label{display:flex;align-items:flex-start;gap:5px;flex-direction:column;font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px}.field-label input,.field-label select,.speed-control select{background:#17243a;color:var(--text);border:1px solid #2b3950;padding:8px 11px;border-radius:7px;height:35px}.symbol-wrap input{width:123px;font-size:13px;font-weight:800;letter-spacing:.4px}.interval-wrap select{min-width:104px}.btn{border:1px solid transparent;border-radius:7px;padding:9px 14px;font-size:12px;font-weight:700;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:5px;transition:background .15s,border-color .15s}.btn-primary{background:var(--blue);color:white}.btn-primary:hover{background:#689fff}.btn-outline{border-color:#3c4a61;background:#19263b;color:#d7dfed}.btn-outline:hover{background:#25354e}.file-btn{cursor:pointer}.topbar-right{margin-left:auto;display:flex;align-items:center;gap:16px;font-size:11px;white-space:nowrap}.privacy-pill{display:flex;align-items:center;gap:7px;color:#c2ccdc}.status-dot{width:7px;height:7px;flex:none;background:var(--green);display:inline-block;border-radius:50%;box-shadow:0 0 8px #22c99f25}.help-link{color:#96a4bc}.help-link:hover{color:white}.notice{background:#182d48;color:#c8dfff;border-bottom:1px solid #3c557b;padding:10px 20px;font-size:12px;line-height:1.5}.notice[data-type="error"]{background:#35212a;color:#ffd5d8;border-color:#6e3440}.notice[data-type="warn"]{background:#362d20;color:#ffdeb0;border-color:#675236}.main-grid{display:grid;grid-template-columns:51px minmax(300px,1fr) 330px;min-height:555px;flex:1;max-height:calc(100vh - 214px)}.drawbar{background:#111b2d;border-right:1px solid var(--border);padding:16px 4px;display:flex;flex-direction:column;align-items:center;gap:9px}.drawbar-label{font-size:8px;font-weight:800;letter-spacing:1px;color:#67758c;margin-bottom:7px}.tool{background:transparent;color:#8999b0;border:1px solid transparent;border-radius:7px;width:34px;height:34px;font-weight:600;font-size:20px}.tool:hover,.tool.active{color:#dce8ff;background:#223451;border-color:#355073}.ema-tool{font-size:10px;letter-spacing:-.5px}.drawbar-divider{background:var(--border);height:1px;width:26px;margin:4px 0}.chart-workspace{min-width:0;background:#0c1423;display:flex;flex-direction:column}.chart-head{display:flex;align-items:center;justify-content:space-between;padding:18px 25px 10px;gap:20px}.chart-title-row{display:flex;align-items:center;gap:10px}.chart-head h1{font-size:21px;letter-spacing:-.5px;margin:0}.chart-head p{font-size:11px;margin:8px 0 0}.tf-badge{background:#202d44;color:#bdc9db;font-size:10px;font-weight:700;border:1px solid #304057;border-radius:4px;padding:4px 7px}.replay-badge{font-size:10px;font-weight:800;color:#78a8ff;background:#182d50;border:1px solid #29476e;padding:5px 7px;border-radius:4px}.chart-price-block{display:flex;flex-direction:column;text-align:right}.chart-price-block strong{font-size:25px;letter-spacing:-.7px;font-variant-numeric:tabular-nums}.muted{color:var(--muted)}.small{font-size:11px}.tiny{font-size:10px}.chart-price-block span{font-size:11px;margin-top:5px}.chart-meta{padding:4px 25px 12px;display:flex;justify-content:space-between;align-items:center;color:#8a99b0;font-size:10px;font-variant-numeric:tabular-nums}.chart-meta>div{display:flex;gap:16px}.chart-meta i{width:10px;height:2px;display:inline-block;vertical-align:middle;margin-right:5px}.legend-ema9 i{background:#83a9fc}.legend-ema21 i{background:#f5b66b}.chart-area{min-height:380px;flex:1;position:relative;overflow:hidden}#chart{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}.empty-state{position:absolute;inset:0;background:#0d1627ed;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;padding:25px;pointer-events:auto}.empty-icon{font-size:44px;color:#5e85be}.empty-state h2{margin:0;font-size:19px;letter-spacing:-.3px}.empty-state p{font-size:12px;max-width:410px;color:#91a0b7;line-height:1.6;margin:1px 0 12px}.chart-foot{height:35px;border-top:1px solid #253147;display:flex;align-items:center;gap:15px;padding:0 18px;color:#8a99b0;font-size:10px}.chip{display:flex;align-items:center;gap:7px;max-width:250px;overflow:hidden;white-space:nowrap}.flex-gap{flex:1}.trade-panel{background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:auto}.panel-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px 14px}.panel-head h2{font-size:17px;letter-spacing:-.3px;margin:5px 0 0}.kicker{font-size:9px;letter-spacing:1.1px;font-weight:800;color:#8a99b0}.paper-label{font-size:9px;font-weight:800;letter-spacing:1px;color:#78a8ff;border:1px solid #3d5684;border-radius:4px;padding:5px 7px}.account-card{background:#19273d;border:1px solid #31425f;border-radius:10px;margin:0 15px 9px;padding:15px 16px}.account-card>strong{display:block;font-size:27px;font-weight:750;letter-spacing:-.8px;margin:5px 0 15px;font-variant-numeric:tabular-nums}.account-stats{display:flex;flex-direction:column;gap:8px;font-size:10px}.account-stats span{display:flex;justify-content:space-between;align-items:center;color:#9eadc3}.account-stats b{font-size:11px;color:#e5ebf4;font-variant-numeric:tabular-nums}.side-section{padding:14px 19px;border-bottom:1px solid var(--border)}.section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px}.section-title h3{font-size:12px;margin:0;font-weight:800}.input-name{display:flex;justify-content:space-between;font-size:10px;color:#a2b0c4;margin-bottom:7px}.side-section input[type=number]{width:100%;border:1px solid #36455d;background:#0d182a;color:#eaf1fc;border-radius:6px;padding:10px 12px;font-size:14px}.input-hint{margin:7px 0 14px;color:#8695ad;font-size:10px;display:flex;justify-content:space-between}.input-hint span{color:#cdd7e6}.order-buttons{display:flex;gap:9px}.order-buttons .btn{flex:1;padding:11px 8px}.btn-buy{background:#167b68;color:#eafff9}.btn-buy:hover{background:#209d83}.btn-sell{background:#9e394c;color:#fff0f1}.btn-sell:hover{background:#bd4659}.cost-note{color:#8493aa;font-size:10px;line-height:1.55;margin-top:12px}.cost-note span{color:#b1bed0}.placeholder{border:1px dashed #33435c;color:#687f9f;text-align:center;font-size:11px;padding:16px 10px;border-radius:7px}.position-block{border:1px solid #33435c;border-radius:7px;padding:11px;background:#152339;margin-bottom:9px;font-size:11px}.position-block>div:first-child{display:flex;justify-content:space-between;margin-bottom:12px}.position-grid{display:grid;grid-template-columns:1fr auto;gap:8px;color:#92a3bd}.position-grid b{color:#eef2fa}.btn-full{width:100%}.journal-section{min-height:120px;flex:1}.link-btn,.text-btn{background:transparent;border:0;color:#86b2ff;font-size:10px;padding:5px}.link-btn:hover,.text-btn:hover{text-decoration:underline}.journal{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:7px}.journal-row{border:1px solid #2a3a55;background:#16243a;border-radius:7px;padding:9px;font-size:10px}.journal-row-head{display:flex;justify-content:space-between;margin-bottom:6px}.journal-row-foot{display:flex;justify-content:space-between;color:#8f9eb4}.profit{color:var(--green)!important}.loss{color:var(--red)!important}.journal-stats{display:flex;justify-content:space-between;gap:6px;margin-top:13px;padding-top:12px;border-top:1px solid #29384e;font-size:10px;color:#8797b0}.journal-stats span{display:flex;flex-direction:column;gap:5px}.journal-stats b{font-size:12px;color:#e9eff8;font-variant-numeric:tabular-nums}.replay-dock{border-top:1px solid #324157;background:#121f33;padding:14px 16px;display:flex;align-items:center;gap:17px;min-height:93px}.play-buttons{display:flex;gap:5px;align-items:center}.icon-btn{border:0;border-radius:7px;background:#1b2a40;color:#b7c7dc;height:35px;min-width:35px;font-size:18px}.icon-btn:hover{background:#2a3c56}.play-btn{border:0;background:var(--blue);color:#fff;width:42px;height:42px;font-size:16px;border-radius:50%;padding-left:3px}.play-btn:hover{background:#6c9ffc}.replay-range{min-width:160px;flex:1}.replay-topline{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:10px;margin-bottom:10px}.replay-topline>div{display:flex;gap:12px;align-items:center}.replay-topline b{font-size:11px;color:#c9d5e5}.date-label{color:#92a3bb;font-variant-numeric:tabular-nums}input[type=range]{accent-color:#75a8ff;width:100%;cursor:pointer}.speed-control{display:flex;align-items:center;gap:8px}.speed-control select{padding:7px;font-size:12px;min-width:63px}.footer{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-top:1px solid var(--border);background:#0b1320;padding:9px 18px;color:#697f9b;font-size:9px;line-height:1.5}.footer strong{color:#a7b6cc}@media(max-width:1100px){.topbar{flex-wrap:wrap}.topbar-right{display:none}.main-grid{grid-template-columns:48px minmax(260px,1fr) 285px}.trade-panel{width:auto}.replay-dock{flex-wrap:wrap}.chart-head{padding-left:16px;padding-right:16px}}@media(max-width:760px){.topbar{gap:12px;padding:10px}.topbar-divider{display:none}.topbar-fields{width:100%;flex-wrap:wrap}.topbar-right{display:none}.main-grid{grid-template-columns:40px minmax(0,1fr);max-height:none;min-height:0}.chart-workspace{min-height:450px}.chart-area{min-height:305px}.trade-panel{grid-column:1/3;border-top:1px solid var(--border);border-left:0;display:grid;grid-template-columns:1fr 1fr;overflow:visible}.panel-head{grid-column:1/3}.account-card{margin:0 10px 10px}.trade-panel .side-section{border-bottom:1px solid var(--border)}.journal-section{grid-column:1/3}.replay-dock{gap:12px}.replay-range{order:2;flex-basis:100%}.footer{flex-direction:column;gap:5px}.chart-head h1{font-size:17px}.chart-price-block strong{font-size:18px}.chart-meta{padding:8px}.chart-meta>div{display:none}.chart-foot{gap:7px}}@media(max-width:410px){.trade-panel{display:block}.replay-dock .btn{font-size:10px;padding:7px}.chart-head{padding:12px 9px}.chart-head p{font-size:9px}.chart-price-block strong{font-size:16px}.date-label{display:none}}
+
+.date-wrap input{width:132px;color:#d5dff0;font-weight:650;font-size:11px}.date-wrap input::-webkit-calendar-picker-indicator{filter:invert(.7)}@media(max-width:470px){.date-wrap input{width:120px}}
+</style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="ReplayLab home"><span class="brand-icon">↗</span><span>Replay<span class="brand-accent">Lab</span></span><span class="brand-beta">BETA</span></a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-fields">
+        <label class="field-label symbol-wrap" title="Crypto trading pair; example: BTCUSDT"><span>SYMBOL</span><input id="symbol" value="BTCUSDT" spellcheck="false" maxlength="24" aria-label="Symbol"></label>
+        <label class="field-label interval-wrap"><span>TIMEFRAME</span><select id="timeframe" aria-label="Chart timeframe"><option value="1m">1 min</option><option value="3m">3 min</option><option value="5m">5 min</option><option value="15m" selected>15 min</option><option value="30m">30 min</option><option value="1h">1 hour</option><option value="2h">2 hour</option><option value="4h">4 hour</option><option value="6h">6 hour</option><option value="12h">12 hour</option><option value="1d">1 day</option><option value="1w">1 week</option></select></label>
+        <label class="field-label date-wrap" title="Optional historical start date (UTC)"><span>START DATE (UTC)</span><input id="startDate" type="date" aria-label="Optional historical start date in UTC"></label>
+        <button id="loadMarket" class="btn btn-primary" type="button">Load data</button>
+        <label class="file-btn btn btn-outline" title="Load real OHLCV candles for any stock from a CSV file">Import CSV<input type="file" id="csvFile" accept=".csv,text/csv" hidden></label>
+      </div>
+      <div class="topbar-right"><span class="privacy-pill"><span class="status-dot"></span>Local paper trading only</span><a class="help-link" href="#how-to" title="How this works">About <span aria-hidden="true">↗</span></a></div>
+    </header>
+
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+    <div class="main-grid">
+      <aside class="drawbar" aria-label="Drawing tools"><span class="drawbar-label">TOOLS</span><button data-tool="crosshair" class="tool active" aria-label="Crosshair" title="Crosshair">✛</button><button data-tool="horizontal" class="tool" aria-label="Add horizontal level" title="Click the chart to add a horizontal level">━</button><button data-tool="clear" class="tool" aria-label="Clear drawing levels" title="Clear all drawing levels">⌫</button><span class="drawbar-divider"></span><button id="toggleEma" class="tool ema-tool active" title="Show/hide EMA 9 and EMA 21">EMA</button></aside>
+      <section class="chart-workspace" aria-label="Historical market chart">
+        <div class="chart-head"><div><div class="chart-title-row"><h1 id="chartTitle">BTC/USDT</h1><span id="timeframeLabel" class="tf-badge">15m</span><span class="replay-badge">● REPLAY</span></div><p id="dataInfo" class="muted">Import a CSV or load real crypto candles to begin</p></div><div class="chart-price-block"><strong id="lastPrice">—</strong><span id="lastChange" class="muted">No price data</span></div></div>
+        <div class="chart-meta"><span id="ohlcInfo">O — &nbsp; H — &nbsp; L — &nbsp; C —</span><div><span class="legend-ema9"><i></i> EMA 9</span><span class="legend-ema21"><i></i> EMA 21</span></div></div>
+        <div class="chart-area" id="chartArea"><canvas id="chart" aria-label="Interactive historical candlestick chart" role="img"></canvas><div class="empty-state" id="emptyState"><span class="empty-icon">▥</span><h2>Practice the market without future candles</h2><p>Load BTC/USDT historical data, or import OHLCV CSV data for a stock, ETF or other market.</p><button class="btn btn-primary" id="emptyLoad">Load BTC/USDT candles</button></div></div>
+        <div class="chart-foot"><div class="chip"><span class="status-dot"></span><span id="sourceLabel">Waiting for data</span></div><span id="candleCount">0 candles</span><span id="chartTimestamp">—</span><span class="flex-gap"></span><span class="muted">Scroll to zoom · Drag to pan</span></div>
+      </section>
+      <aside class="trade-panel" aria-label="Paper trading"><div class="panel-head"><div><span class="kicker">SIMULATED ACCOUNT</span><h2>Paper Trading</h2></div><span class="paper-label">DEMO</span></div><div class="account-card"><span class="muted small">Total equity</span><strong id="equity">$100,000.00</strong><div class="account-stats"><span>Realized balance <b id="balance">$100,000.00</b></span><span>Unrealized P&amp;L <b id="unrealized">$0.00</b></span></div></div>
+        <div class="side-section"><div class="section-title"><h3>New market order</h3><span class="muted tiny">Current replay close</span></div><label for="quantity" class="input-name">Quantity <span id="quantityUnit">BTC</span></label><input id="quantity" type="number" value="0.1" min="0.000001" step="any" inputmode="decimal"><div class="input-hint">Approx. notional: <span id="notional">—</span></div><div class="order-buttons"><button id="buyBtn" class="btn btn-buy">↑ Buy / Long</button><button id="shortBtn" class="btn btn-sell">↓ Sell / Short</button></div><div class="cost-note">Assumptions: <span>0.04% fee + 0.02% slippage per fill.</span> Market-close proxy, not historical order-book fills.</div></div>
+        <div class="side-section"><div class="section-title"><h3>Open position</h3><span class="muted tiny" id="positionCount">0 open</span></div><div id="positionEmpty" class="placeholder">No open position</div><div id="positionDetail" hidden><div class="position-block"><div><strong id="positionSide">—</strong><span id="positionQuantity">—</span></div><div class="position-grid"><span>Entry</span><b id="positionEntry">—</b><span>Unrealized P&amp;L</span><b id="positionPnl">—</b></div></div><button id="closeBtn" class="btn btn-outline btn-full">Close market position</button></div></div>
+        <div class="side-section journal-section"><div class="section-title"><h3>Trade journal</h3><button id="exportBtn" class="link-btn">Export CSV</button></div><div id="journal" class="journal"><div class="placeholder">Closed trades will appear here</div></div><div class="journal-stats"><span>Closed <b id="closedCount">0</b></span><span>Win rate <b id="winRate">—</b></span><span>Net P&amp;L <b id="netPnl">$0.00</b></span></div></div>
+      </aside>
+    </div>
+    <section class="replay-dock" aria-label="Replay controls"><div class="play-buttons"><button class="icon-btn" id="resetReplay" title="Restart replay and reset paper account">↺</button><button class="icon-btn" id="stepBack" title="Step back one candle (resets trades)">⏮</button><button class="play-btn" id="playPause" title="Play or pause (space)" aria-label="Play">▶</button><button class="icon-btn" id="stepNext" title="Reveal one more candle (right arrow)">⏭</button></div><div class="replay-range"><div class="replay-topline"><div><span class="kicker">BAR REPLAY</span><b id="replayCounter">0 / 0 candles</b></div><span id="replayDate" class="date-label">Choose a data source to begin</span></div><input id="replaySlider" type="range" value="0" min="0" max="100" disabled aria-label="Replay position"></div><div class="speed-control"><span class="kicker">SPEED</span><select id="speed"><option value="1">1×</option><option value="2">2×</option><option value="5" selected>5×</option><option value="10">10×</option><option value="25">25×</option><option value="50">50×</option></select></div><button class="btn btn-outline" id="loadMore" title="Load more next candles when available" disabled>Load next data +</button><button class="text-btn" id="resetAccount" title="Reset simulated balance and trades">Reset account</button></section>
+    <footer class="footer" id="how-to"><span><strong>ReplayLab</strong> · A historical practice tool, not a brokerage.</span><span>Crypto candles from Binance.US or Binance market-data endpoint when available. Stocks require user-provided CSV. Historical coverage, fills and data access vary by source. No real orders are sent.</span></footer>
+  </div>
+  <script>/* ReplayLab. Free local paper-trading simulator. No exchange orders or broker integration. */
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const FEE_RATE = 0.0004;
+  const SLIPPAGE_RATE = 0.0002;
+  const START_BALANCE = 100000;
+  const SAVE_KEY = 'replaylab-session-v1';
+  const color = { green: '#21c69c', red: '#ef6976', blue: '#86aefa', orange: '#f0b76e', grid: '#233047', muted: '#8090aa' };
+  const state = {
+    candles: [], cursor: -1, replayStart: 0, speed: 5, playing: false, timer: null,
+    symbol: 'BTCUSDT', timeframe: '15m', provider: '', mode: '',
+    balance: START_BALANCE, position: null, trades: [],
+    visibleBars: 105, scrollBack: 0, drawings: [], tool: 'crosshair', ema: true,
+    hoveredIndex: -1, mouseX: 0, mouseY: 0, dragging: false,
+    chartGeometry: null, loadBusy: false, csvLabel: '', lastStatus: ''
+  };
+  const money = (n, decimals = 2) => Number.isFinite(n) ? '$' + n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) : '—';
+  const priceFormat = n => !Number.isFinite(n) ? '—' : n >= 100 ? money(n) : n >= 1 ? money(n, 3) : money(n, 6);
+  const signedMoney = n => `${n >= 0 ? '+' : '−'}${money(Math.abs(n))}`;
+  const timeFormat = t => new Date(t * 1000).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' });
+  const fmtShort = t => new Date(t * 1000).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+  const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+  const current = () => state.candles[state.cursor] || null;
+  const positionPnl = () => !state.position || !current() ? 0 : (current().close - state.position.entry) * state.position.qty * state.position.direction;
+  const equity = () => state.balance + positionPnl();
+  const showMessage = (text, type = 'info') => { const el = $('notice'); el.hidden = false; el.dataset.type = type; el.textContent = text; state.lastStatus = text; };
+  const clearMessage = () => { $('notice').hidden = true; };
+  function applyEnabled() {
+    const ready = state.cursor >= 0 && state.candles.length > 0;
+    for (const id of ['playPause','stepNext','stepBack','resetReplay','buyBtn','shortBtn','quantity','resetAccount']) $(id).disabled = !ready;
+    $('replaySlider').disabled = !ready;
+    $('loadMore').disabled = !ready || state.mode !== 'crypto' || state.loadBusy;
+    $('closeBtn').disabled = !state.position;
+    $('loadMarket').disabled = state.loadBusy;
+  }
+  function clearTimer() { if (state.timer) clearInterval(state.timer); state.timer = null; state.playing = false; }
+  function setPlaying(playing) {
+    clearTimer();
+    if (!playing || state.cursor < 0) { updateUI(); return; }
+    state.playing = true;
+    state.timer = setInterval(() => {
+      if (state.cursor >= state.candles.length - 1) {
+        clearTimer(); showMessage('End of loaded candles. Use “Load next data +” to continue if the provider has more history.', 'warn'); updateUI(); return;
+      }
+      state.cursor += 1;
+      state.scrollBack = 0;
+      updateUI();
+      if (state.cursor % 5 === 0) saveSession();
+    }, Math.round(1000 / state.speed));
+    updateUI();
+  }
+  function resetPaper() { state.balance = START_BALANCE; state.position = null; state.trades = []; }
+  function goTo(index, resetIfRewind = true) {
+    if (!state.candles.length) return;
+    const target = clamp(index, state.replayStart, state.candles.length - 1);
+    if (resetIfRewind && target < state.cursor && (state.position || state.trades.length)) {
+      resetPaper(); showMessage('Rewinding cleared paper trades and positions to avoid hindsight-based results.', 'warn');
+    }
+    state.cursor = target; state.scrollBack = 0; updateUI(); saveSession();
+  }
+  function prepareCandles(raw, source, mode, symbol, timeframe) {
+    if (!Array.isArray(raw)) throw new Error('The data source returned no usable candles.');
+    const normalized = raw.map(d => ({ time: Number(d.time), open: Number(d.open), high: Number(d.high), low: Number(d.low), close: Number(d.close), volume: Number(d.volume || 0) }))
+      .filter(d => Number.isFinite(d.time) && d.time >= 0 && [d.open,d.high,d.low,d.close,d.volume].every(Number.isFinite) && d.low <= d.high && d.open >= d.low && d.open <= d.high && d.close >= d.low && d.close <= d.high && d.volume >= 0 && d.high > 0)
+      .sort((a,b) => a.time - b.time);
+    const unique = normalized.filter((d,i) => !i || d.time !== normalized[i - 1].time);
+    if (unique.length < 10) throw new Error('At least 10 valid chronological OHLCV candles are needed.');
+    clearTimer(); resetPaper();
+    state.candles = unique; state.symbol = symbol; state.timeframe = timeframe; state.provider = source; state.mode = mode;
+    state.replayStart = Math.min(150, unique.length - 1); state.cursor = state.replayStart;
+    state.scrollBack = 0; state.visibleBars = 105; state.drawings = [];
+    $('symbol').value = symbol;
+    const match = [...$('timeframe').options].find(o => o.value === timeframe);
+    if (match) $('timeframe').value = timeframe;
+    clearMessage(); updateUI(); saveSession();
+  }
+  async function fetchKlines(symbol, interval, opts = {}) {
+    const params = new URLSearchParams({ symbol, interval, limit: String(opts.limit || 1000) });
+    if (opts.startTime) params.set('startTime', String(opts.startTime));
+    if (opts.endTime) params.set('endTime', String(opts.endTime));
+    let lastErr = null;
+    const hosts = [
+      ['Binance.US', 'https://api.binance.us/api/v3/klines'],
+      ['Binance Public Data', 'https://data-api.binance.vision/api/v3/klines']
+    ];
+    for (const [name, url] of hosts) {
+      try {
+        const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 12000);
+        let response;
+        try { response = await fetch(`${url}?${params}`, { signal: controller.signal, cache: 'no-store' }); }
+        finally { clearTimeout(timeout); }
+        if (!response.ok) throw new Error(`${name} responded with HTTP ${response.status}`);
+        const data = await response.json();
+        if (!Array.isArray(data) || !data.length) throw new Error('No candles returned for this symbol/date.');
+        const mapped = data.map(d => ({ time: Number(d[0]) / 1000, open: Number(d[1]), high: Number(d[2]), low: Number(d[3]), close: Number(d[4]), volume: Number(d[5]) }));
+        return { data: mapped, source: name };
+      } catch(e) { lastErr = e; }
+    }
+    throw new Error(`Could not load crypto data from either public endpoint. ${lastErr ? lastErr.message : ''} Network, location or browser CORS restrictions may apply. You can still import an OHLCV CSV file.`);
+  }
+  async function loadMarket() {
+    if (state.loadBusy) return;
+    const symbol = $('symbol').value.toUpperCase().trim().replace(/[\s/\-]/g,'');
+    const timeframe = $('timeframe').value;
+    const selectedDate = $('startDate').value;
+    const startTime = selectedDate ? Date.parse(selectedDate + 'T00:00:00Z') : undefined;
+    if (selectedDate && (!Number.isFinite(startTime) || startTime > Date.now())) { showMessage('Choose a historical start date no later than today.', 'warn'); return; }
+    if (!/^[A-Z0-9]{5,20}$/.test(symbol)) { showMessage('Enter a valid crypto symbol such as BTCUSDT. To replay stocks, use Import CSV.', 'warn'); return; }
+    state.loadBusy = true; $('loadMarket').textContent = 'Loading…'; applyEnabled();
+    showMessage('Fetching real historical candles from public crypto market-data endpoints…');
+    try {
+      const r = await fetchKlines(symbol, timeframe, {limit:1000, startTime});
+      prepareCandles(r.data, r.source, 'crypto', symbol, timeframe);
+      showMessage(`Loaded ${r.data.length} real ${timeframe} candles for ${symbol} from ${r.source}. Replay is unlimited; available historical depth depends on the provider.`);
+    } catch(e) { showMessage(e.message, 'error'); }
+    finally { state.loadBusy = false; $('loadMarket').textContent = 'Load data'; applyEnabled(); }
+  }
+  async function loadMore() {
+    if (state.loadBusy || state.mode !== 'crypto' || !state.candles.length) return;
+    state.loadBusy = true; applyEnabled(); showMessage('Fetching next historical candles…');
+    try {
+      const last = state.candles[state.candles.length - 1];
+      const result = await fetchKlines(state.symbol, state.timeframe, { startTime: Math.round(last.time * 1000) + 1, limit:1000 });
+      const incoming = result.data.filter(c => c.time > last.time);
+      if (!incoming.length) { showMessage('No additional completed candles available yet for this pair and timeframe.', 'warn'); return; }
+      const seen = new Set(state.candles.map(c=>c.time));
+      state.candles.push(...incoming.filter(c => !seen.has(c.time)));
+      state.provider = result.source;
+      showMessage(`Appended ${incoming.length} candles. Your replay and trades remain intact.`);
+      updateUI(); saveSession();
+    } catch(e) { showMessage(e.message, 'error'); }
+    finally { state.loadBusy = false; applyEnabled(); }
+  }
+  function parseCsvLine(line) {
+    const parts = []; let cur = ''; let quotes = false;
+    for(let i=0;i<line.length;i++) { const c=line[i]; if(c==='"') { if(quotes && line[i+1]==='"'){cur+='"';i++;} else quotes=!quotes; } else if (c===',' && !quotes){parts.push(cur.trim());cur='';} else cur+=c; }
+    parts.push(cur.trim()); return parts;
+  }
+  function parseCsv(text) {
+    const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(x=>x.trim());
+    if(lines.length<11) throw new Error('CSV needs a header plus at least 10 candles.');
+    const headers=parseCsvLine(lines[0]).map(x=>x.toLowerCase().replace(/\W/g,''));
+    const keys = ['time','open','high','low','close','volume'];
+    const indices = keys.map(key => {
+      const aliases = key==='time' ? ['time','date','datetime','timestamp','opentime'] : key==='volume' ? ['volume','vol'] : [key];
+      return headers.findIndex(h=>aliases.includes(h));
+    });
+    if(indices.slice(0,5).some(x=>x<0)) throw new Error('CSV columns must include time (or date), open, high, low, close; volume is optional.');
+    const candles = [];
+    for(const line of lines.slice(1)) {
+      const v=parseCsvLine(line);
+      let time=v[indices[0]];
+      if(!time) continue;
+      let t;
+      if (/^\d{10}(?:\.\d+)?$/.test(time)) t=Number(time);
+      else if (/^\d{13}$/.test(time)) t=Number(time)/1000;
+      else { let x=Date.parse(time); t=Number.isFinite(x)?x/1000:NaN; }
+      candles.push({time:t,open:v[indices[1]],high:v[indices[2]],low:v[indices[3]],close:v[indices[4]],volume:indices[5]>=0?v[indices[5]]:0});
+    }
+    return candles;
+  }
+  async function importCsv(file) {
+    if (!file) return;
+    if(file.size>15*1024*1024){showMessage('CSV import limit is 15 MB per file to keep the browser responsive.', 'warn');return;}
+    try {
+      const raw=await file.text(); const candles=parseCsv(raw);
+      const label=file.name.replace(/\.csv$/i,'').replace(/[^a-zA-Z0-9._-]/g,'').toUpperCase().slice(0,24) || 'CSV DATA';
+      prepareCandles(candles, 'Local CSV · ' + file.name, 'csv', label, 'CSV');
+      showMessage(`Imported ${state.candles.length.toLocaleString()} OHLCV candles from ${file.name}. You control the data's quality and timezone; no online stock feed is implied.`);
+    } catch(e) { showMessage(e.message, 'error'); }
+    finally { $('csvFile').value=''; }
+  }
+  function execute(side) {
+    const c=current(); if (!c || state.position) {showMessage(state.position?'Close the existing position before opening another.':'Load data first.','warn');return;}
+    const qty=Number($('quantity').value);
+    if (!Number.isFinite(qty) || qty<=0){showMessage('Enter a positive quantity.','warn');return;}
+    const direction=side==='LONG'?1:-1;
+    const entry = c.close*(1 + direction*SLIPPAGE_RATE);
+    const notional = entry*qty;
+    if (notional > equity()) { showMessage('Notional exceeds your available paper equity. Reduce quantity (1× notional limit).','warn'); return; }
+    const fee = notional*FEE_RATE;
+    state.balance -= fee;
+    state.position = {symbol:state.symbol,side,direction,qty,entry,openTime:c.time,openFee:fee};
+    showMessage(`${side} paper position opened at ${priceFormat(entry)} including simulated slippage. No real order was placed.`);
+    updateUI(); saveSession();
+  }
+  function closePosition() {
+    const c=current(); const p=state.position; if(!c||!p)return;
+    const exit=c.close*(1 - p.direction*SLIPPAGE_RATE);
+    const closeFee=exit*p.qty*FEE_RATE;
+    const gross=(exit-p.entry)*p.qty*p.direction;
+    const net=gross-p.openFee-closeFee;
+    state.balance += gross-closeFee;
+    state.trades.unshift({id:String(Date.now())+'-'+state.trades.length,symbol:p.symbol,side:p.side,qty:p.qty,entry:p.entry,exit,opened:p.openTime,closed:c.time,fee:p.openFee+closeFee,pnl:net});
+    state.position=null;
+    showMessage(`${p.side} paper position closed. Net P&L ${signedMoney(net)} (fees and slippage included).`);
+    updateUI(); saveSession();
+  }
+  function updateUI() {
+    const c=current();
+    $('playPause').textContent=state.playing?'Ⅱ':'▶'; $('playPause').setAttribute('aria-label',state.playing?'Pause':'Play');
+    $('chartTitle').textContent=state.mode==='csv'?state.symbol:state.symbol.replace(/USDT$/,'/USDT');
+    $('timeframeLabel').textContent=state.timeframe;
+    $('dataInfo').textContent=state.candles.length?`${state.provider}  ·  Historical candlesticks · UTC`:'Choose a data source to begin';
+    $('sourceLabel').textContent=state.provider||'Waiting for data';
+    $('candleCount').textContent=`${state.candles.length.toLocaleString()} candles loaded`;
+    $('lastPrice').textContent=c?priceFormat(c.close):'—';
+    const pct=c?(c.close-c.open)/c.open*100:0;
+    $('lastChange').textContent=c?`${pct>=0?'+':''}${pct.toFixed(2)}% this candle`:'No price data';
+    $('lastChange').className=c?(pct>=0?'profit':'loss'):'muted';
+    $('ohlcInfo').textContent=c?`O ${priceFormat(c.open)}    H ${priceFormat(c.high)}    L ${priceFormat(c.low)}    C ${priceFormat(c.close)}`:'O —    H —    L —    C —';
+    $('chartTimestamp').textContent=c?fmtShort(c.time)+' UTC':'—';
+    $('replayCounter').textContent=c?`${(state.cursor+1).toLocaleString()} / ${state.candles.length.toLocaleString()} candles`:'0 / 0 candles';
+    $('replayDate').textContent=c?timeFormat(c.time):'Choose a data source to begin';
+    $('replaySlider').max=String(Math.max(1,state.candles.length-1));
+    $('replaySlider').min=String(state.replayStart);
+    $('replaySlider').value=String(Math.max(state.replayStart,state.cursor));
+    $('equity').textContent=money(equity()); $('balance').textContent=money(state.balance);
+    const u=positionPnl(); $('unrealized').textContent=signedMoney(u); $('unrealized').className=u>=0?'profit':'loss';
+    $('quantityUnit').textContent=state.mode==='crypto'?state.symbol.replace(/USDT$/,''):'units';
+    const qty=Number($('quantity').value); $('notional').textContent=c&&Number.isFinite(qty)?money(Math.max(0,qty)*c.close):'—';
+    $('positionEmpty').hidden=!!state.position; $('positionDetail').hidden=!state.position;
+    $('positionCount').textContent=state.position?'1 open':'0 open';
+    if(state.position){const p=state.position; $('positionSide').textContent=p.side; $('positionSide').className=p.direction===1?'profit':'loss';$('positionQuantity').textContent=`${p.qty} ${state.symbol}`; $('positionEntry').textContent=priceFormat(p.entry); $('positionPnl').textContent=signedMoney(u);$('positionPnl').className=u>=0?'profit':'loss';}
+    $('closedCount').textContent=state.trades.length;
+    $('winRate').textContent=state.trades.length?`${(100*state.trades.filter(x=>x.pnl>0).length/state.trades.length).toFixed(1)}%`:'—';
+    const net=state.trades.reduce((s,t)=>s+t.pnl,0);$('netPnl').textContent=signedMoney(net);$('netPnl').className=net>=0?'profit':'loss';
+    renderJournal(); $('emptyState').hidden=!!state.candles.length;
+    $('toggleEma').classList.toggle('active',state.ema);
+    applyEnabled(); drawChart();
+  }
+  function renderJournal() {
+    const box=$('journal'); box.replaceChildren();
+    if(!state.trades.length){const d=document.createElement('div');d.className='placeholder';d.textContent='Closed trades will appear here';box.append(d);return;}
+    for(const t of state.trades.slice(0,20)) {
+      const item=document.createElement('div');item.className='journal-row';
+      const top=document.createElement('div');top.className='journal-row-head';
+      const side=document.createElement('b');side.className=t.side==='LONG'?'profit':'loss';side.textContent=t.side+' · '+t.qty+' '+t.symbol;
+      const pnl=document.createElement('b');pnl.className=t.pnl>=0?'profit':'loss';pnl.textContent=signedMoney(t.pnl);top.append(side,pnl);
+      const bottom=document.createElement('div');bottom.className='journal-row-foot';
+      const prices=document.createElement('span');prices.textContent=`${priceFormat(t.entry)} → ${priceFormat(t.exit)}`;
+      const date=document.createElement('span');date.textContent=fmtShort(t.closed);bottom.append(prices,date);item.append(top,bottom);box.append(item);
+    }
+  }
+  function downloadTrades() {
+    if(!state.trades.length){showMessage('No closed trades to export yet.','warn');return;}
+    const header=['symbol','side','quantity','entry_price','exit_price','entry_time_utc','exit_time_utc','fees','net_pnl'];
+    const rows=state.trades.map(t=>[t.symbol,t.side,t.qty,t.entry,t.exit,new Date(t.opened*1000).toISOString(),new Date(t.closed*1000).toISOString(),t.fee,t.pnl]);
+    const csv=[header,...rows].map(row=>row.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+    const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    const a=document.createElement('a');a.href=url;a.download='replaylab-trades.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+  }
+  function calculateEma(values, period) {
+    if(!values.length)return [];
+    const k=2/(period+1), output=[];let prior=values[0].close;
+    for(const v of values){prior=v.close*k+prior*(1-k);output.push(prior);}return output;
+  }
+  function roundRect(ctx,x,y,w,h,r){const rr=Math.min(r,w/2,h/2);ctx.beginPath();ctx.roundRect(x,y,w,h,rr);}
+  function drawChart() {
+    const canvas=$('chart'), bounds=canvas.getBoundingClientRect();
+    const W=bounds.width||800,H=bounds.height||400;
+    if(W<5||H<5)return;
+    const dpr=Math.min(2,window.devicePixelRatio||1);const pw=Math.round(W*dpr),ph=Math.round(H*dpr);
+    if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
+    const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#0c1423';ctx.fillRect(0,0,W,H);
+    const left=14, right=Math.min(82,W*.22), top=22, bottom=31, volH=Math.min(69,Math.max(35,H*.17)), gap=15;
+    const plotW=W-left-right, plotH=Math.max(120,H-top-bottom-volH-gap), volumeTop=top+plotH+gap;
+    ctx.strokeStyle=color.grid;ctx.lineWidth=1;ctx.fillStyle=color.muted;ctx.font='10px system-ui';ctx.textAlign='left';
+    for(let i=0;i<=5;i++){const y=top+plotH*i/5;ctx.beginPath();ctx.moveTo(left,y+.5);ctx.lineTo(W-right+8,y+.5);ctx.stroke();}
+    if(state.cursor<0){state.chartGeometry=null;return;}
+    const len=state.cursor+1, count=Math.min(state.visibleBars,len);const maxOffset=Math.max(0,len-count);
+    state.scrollBack=clamp(state.scrollBack,0,maxOffset);
+    const end=len-1-state.scrollBack,start=Math.max(0,end-count+1);
+    const all=state.candles.slice(0,len);const bars=all.slice(start,end+1);
+    if(!bars.length)return;
+    let hi=Math.max(...bars.map(x=>x.high)),lo=Math.min(...bars.map(x=>x.low));const range=Math.max(1e-8,hi-lo);hi+=range*.12;lo-=range*.10;
+    const yPrice=p=>top+(hi-p)/(hi-lo)*plotH;
+    const barWidth=plotW/bars.length;const wickX=j=>left+(j+.5)*barWidth;
+    const maxVol=Math.max(...bars.map(c=>c.volume),1);
+    const fmtAxis=n=>n>=1000?n.toLocaleString('en-US',{maximumFractionDigits:0}):n.toFixed(n>=1?2:5);
+    ctx.textBaseline='middle';ctx.textAlign='left';
+    for(let i=0;i<=5;i++){const p=hi-(hi-lo)*i/5;ctx.fillStyle='#71829e';ctx.fillText(fmtAxis(p),W-right+13,top+plotH*i/5);}
+    for(let i=0;i<=6;i++){
+      const j=Math.min(bars.length-1,Math.round(i*(bars.length-1)/6));const x=wickX(j);
+      ctx.strokeStyle='#1d2b40';ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,H-bottom);ctx.stroke();
+      ctx.fillStyle='#7386a3';ctx.font='9px system-ui';ctx.textAlign='center';ctx.fillText(new Date(bars[j].time*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}),x,H-15);
+    }
+    for(let j=0;j<bars.length;j++) {
+      const b=bars[j],x=wickX(j),up=b.close>=b.open,shade=up?color.green:color.red;
+      ctx.globalAlpha=.30;ctx.fillStyle=shade;const h=Math.max(1,b.volume/maxVol*(volH-3));ctx.fillRect(x-Math.max(1,barWidth*.25),volumeTop+volH-h,Math.max(1,barWidth*.52),h);ctx.globalAlpha=1;
+      ctx.strokeStyle=shade;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,yPrice(b.high));ctx.lineTo(x,yPrice(b.low));ctx.stroke();
+      const y1=yPrice(Math.max(b.open,b.close)),y2=yPrice(Math.min(b.open,b.close));const bodyW=Math.min(Math.max(2,barWidth*.65),15);
+      ctx.fillStyle=shade;ctx.fillRect(x-bodyW/2,y1,bodyW,Math.max(1.3,y2-y1));
+    }
+    if(state.ema && bars.length>1){
+      for (const [period,shade] of [[9,color.blue],[21,color.orange]]) {
+        const values=calculateEma(all,period);ctx.strokeStyle=shade;ctx.lineWidth=1.5;ctx.beginPath();let used=false;
+        for(let j=0;j<bars.length;j++){const val=values[start+j];if(!Number.isFinite(val))continue;const x=wickX(j),y=yPrice(val);if(used)ctx.lineTo(x,y);else{ctx.moveTo(x,y);used=true;}}
+        ctx.stroke();
+      }
+    }
+    for(const line of state.drawings){const y=yPrice(line.price);if(y<top||y>top+plotH)continue;ctx.setLineDash([5,4]);ctx.strokeStyle='#93a9ce';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(W-right,y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#a7bde2';ctx.fillText(fmtAxis(line.price),W-right+12,y);}
+    const last=bars[bars.length-1];const lY=yPrice(last.close);if(lY>=top&&lY<=top+plotH){ctx.setLineDash([3,4]);ctx.strokeStyle=last.close>=last.open?'#21c69c6b':'#ef69766b';ctx.beginPath();ctx.moveTo(left,lY);ctx.lineTo(W-right+4,lY);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=last.close>=last.open?'#167b68':'#a13e52';roundRect(ctx,W-right+6,lY-10,right-10,20,3);ctx.fill();ctx.font='10px system-ui';ctx.textAlign='center';ctx.fillStyle='white';ctx.fillText(fmtAxis(last.close),W-right/2+1,lY);}
+    const hover = state.hoveredIndex;
+    if(hover>=start&&hover<=end&&state.mouseX>=left&&state.mouseX<=W-right) {
+      const b=state.candles[hover],x=wickX(hover-start),y=clamp(state.mouseY,top,top+plotH);
+      ctx.strokeStyle='#607999';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,H-bottom);ctx.moveTo(left,y);ctx.lineTo(W-right,y);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='#d0dcee';ctx.font='10px system-ui';ctx.textAlign='left';ctx.fillText(`O ${fmtAxis(b.open)}   H ${fmtAxis(b.high)}   L ${fmtAxis(b.low)}   C ${fmtAxis(b.close)}`,left+8,12);
+    }
+    state.chartGeometry={left,right,top,bottom,plotW,plotH,W,H,start,end,barWidth,lo,hi,convertY:y=>hi-(clamp(y,top,top+plotH)-top)/plotH*(hi-lo)};
+  }
+  function chartMouse(ev) {
+    const r=$('chart').getBoundingClientRect(),x=ev.clientX-r.left,y=ev.clientY-r.top;state.mouseX=x;state.mouseY=y;
+    const g=state.chartGeometry;
+    if(g){const index=g.start+Math.floor((x-g.left)/g.barWidth);state.hoveredIndex=x>=g.left && x<=g.W-g.right ? clamp(index,g.start,g.end):-1;}
+    drawChart();
+  }
+  function saveSession() {
+    try {
+      const obj={v:1, candles:state.candles.length<50000?state.candles:[],cursor:state.cursor,replayStart:state.replayStart,speed:state.speed,symbol:state.symbol,timeframe:state.timeframe,provider:state.provider,mode:state.mode,balance:state.balance,position:state.position,trades:state.trades.slice(0,500),drawings:state.drawings,ema:state.ema};
+      localStorage.setItem(SAVE_KEY,JSON.stringify(obj));
+    } catch(e) { if(e?.name==='QuotaExceededError') showMessage('Local browser storage is full; reload persistence is unavailable for this large dataset. Replay still works.', 'warn'); }
+  }
+  function restoreSession() {
+    try {
+      const data=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');
+      if(!data||data.v!==1||!Array.isArray(data.candles)||!data.candles.length)return;
+      prepareCandles(data.candles,data.provider||'Restored session',data.mode||'csv',data.symbol||'CSV',data.timeframe||'CSV');
+      state.replayStart=clamp(Number(data.replayStart)||0,0,state.candles.length-1);
+      state.cursor=clamp(Number(data.cursor)||0,state.replayStart,state.candles.length-1);
+      state.speed=[1,2,5,10,25,50].includes(data.speed)?data.speed:5;
+      state.balance=Number.isFinite(data.balance)?data.balance:START_BALANCE;
+      state.position=data.position||null;state.trades=Array.isArray(data.trades)?data.trades:[];
+      state.drawings=Array.isArray(data.drawings)?data.drawings:[];
+      state.ema=data.ema!==false;$('speed').value=String(state.speed);
+      updateUI(); saveSession(); showMessage('Restored the last local replay session from this browser.');
+    } catch(e){console.warn('Could not restore replay session',e);}
+  }
+  function initEvents() {
+    $('loadMarket').addEventListener('click',loadMarket);$('emptyLoad').addEventListener('click',loadMarket);
+    $('csvFile').addEventListener('change',e=>importCsv(e.target.files?.[0]));
+    $('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')loadMarket();});
+    $('quantity').addEventListener('input',updateUI);
+    $('buyBtn').addEventListener('click',()=>execute('LONG'));
+    $('shortBtn').addEventListener('click',()=>execute('SHORT'));
+    $('closeBtn').addEventListener('click',closePosition);$('exportBtn').addEventListener('click',downloadTrades);
+    $('playPause').addEventListener('click',()=>setPlaying(!state.playing));
+    $('speed').addEventListener('change',e=>{state.speed=Number(e.target.value);if(state.playing)setPlaying(true);saveSession();});
+    $('stepNext').addEventListener('click',()=>{clearTimer();goTo(state.cursor+1);});
+    $('stepBack').addEventListener('click',()=>{clearTimer();goTo(state.cursor-1);});
+    $('resetReplay').addEventListener('click',()=>{clearTimer();resetPaper();goTo(state.replayStart,false);showMessage('Replay restarted and paper account reset.');});
+    $('resetAccount').addEventListener('click',()=>{if(!confirm('Reset paper balance to $100,000 and delete the saved trade journal?'))return;resetPaper();updateUI();saveSession();});
+    $('replaySlider').addEventListener('input',e=>{clearTimer();goTo(Number(e.target.value));});
+    $('loadMore').addEventListener('click',loadMore);
+    $('toggleEma').addEventListener('click',()=>{state.ema=!state.ema;updateUI();saveSession();});
+    document.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>{
+      const tool=b.dataset.tool;if(tool==='clear'){state.drawings=[];state.tool='crosshair';}
+      else state.tool=tool;
+      document.querySelectorAll('[data-tool]').forEach(el=>el.classList.toggle('active',el.dataset.tool===state.tool));
+      drawChart();saveSession();
+    }));
+    const canvas=$('chart');let dragX=0;
+    canvas.addEventListener('mousemove',e=>{if(state.dragging){const dx=e.clientX-dragX;const g=state.chartGeometry;if(g&&Math.abs(dx)>=g.barWidth){state.scrollBack=clamp(state.scrollBack+Math.round(dx/g.barWidth),0,Math.max(0,state.cursor+1-state.visibleBars));dragX=e.clientX;} }chartMouse(e);});
+    canvas.addEventListener('mouseleave',()=>{state.dragging=false;state.hoveredIndex=-1;drawChart();});
+    canvas.addEventListener('mousedown',e=>{if(e.button!==0)return;if(state.tool==='crosshair'){state.dragging=true;dragX=e.clientX;canvas.style.cursor='grabbing';}});
+    window.addEventListener('mouseup',()=>{state.dragging=false;canvas.style.cursor='crosshair';});
+    canvas.addEventListener('click',e=>{if(state.tool!=='horizontal'||!state.chartGeometry)return;const r=canvas.getBoundingClientRect(),y=e.clientY-r.top;const g=state.chartGeometry;if(y<g.top||y>g.top+g.plotH)return;state.drawings.push({price:g.convertY(y)});drawChart();saveSession();});
+    canvas.addEventListener('wheel',e=>{e.preventDefault();if(e.shiftKey){state.scrollBack=clamp(state.scrollBack+Math.sign(e.deltaY)*5,0,Math.max(0,state.cursor+1-state.visibleBars));}
+      else{state.visibleBars=clamp(state.visibleBars+Math.sign(e.deltaY)*9,25,250);}drawChart();},{passive:false});
+    window.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;if(e.code==='Space'){e.preventDefault();setPlaying(!state.playing);}else if(e.key==='ArrowRight'){e.preventDefault();clearTimer();goTo(state.cursor+1);}else if(e.key==='ArrowLeft'){e.preventDefault();clearTimer();goTo(state.cursor-1);}});
+    if(typeof ResizeObserver!=='undefined')new ResizeObserver(drawChart).observe($('chartArea'));
+    else window.addEventListener('resize',drawChart);
+    window.addEventListener('beforeunload',saveSession);
+  }
+  initEvents();restoreSession();updateUI();
+})();
+</script>
+</body>
+</html>
