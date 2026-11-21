@@ -6,7 +6,8 @@
   <meta name="theme-color" content="#0b1120">
   <meta name="description" content="Free historical chart replay and local paper-trading simulator with public crypto candles and CSV market data import.">
   <title>ReplayLab — Market Replay & Paper Trading</title>
-  <style>:root{color-scheme:dark;--bg:#0b1120;--panel:#111b2d;--panel2:#151f34;--border:#273247;--text:#e7ecf4;--muted:#8997ad;--blue:#4e89f9;--green:#22c99f;--red:#f06a76;--orange:#f2b96b;--brand:#71a8ff;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-synthesis:none}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.4;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}a{color:inherit;text-decoration:none}.app-shell{min-height:100vh;display:flex;flex-direction:column}.topbar{min-height:73px;background:#0f192b;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:20px;padding:10px 20px}.brand{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:800;letter-spacing:-.7px;white-space:nowrap}.brand-icon{display:grid;place-items:center;background:var(--blue);height:29px;width:29px;border-radius:8px;color:#fff;font-size:27px;font-weight:500}.brand-accent{color:#84b2ff}.brand-beta{font-size:9px;letter-spacing:1px;color:#a5b2cc;border:1px solid #304560;border-radius:4px;padding:4px 5px;margin-left:1px}.topbar-divider{width:1px;height:31px;background:var(--border)}.topbar-fields{display:flex;align-items:center;gap:10px;min-width:0}.field-label{display:flex;align-items:flex-start;gap:5px;flex-direction:column;font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px}.field-label input,.field-label select,.speed-control select{background:#17243a;color:var(--text);border:1px solid #2b3950;padding:8px 11px;border-radius:7px;height:35px}.symbol-wrap input{width:123px;font-size:13px;font-weight:800;letter-spacing:.4px}.interval-wrap select{min-width:104px}.btn{border:1px solid transparent;border-radius:7px;padding:9px 14px;font-size:12px;font-weight:700;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:5px;transition:background .15s,border-color .15s}.btn-primary{background:var(--blue);color:white}.btn-primary:hover{background:#689fff}.btn-outline{border-color:#3c4a61;background:#19263b;color:#d7dfed}.btn-outline:hover{background:#25354e}.file-btn{cursor:pointer}.topbar-right{margin-left:auto;display:flex;align-items:center;gap:16px;font-size:11px;white-space:nowrap}.privacy-pill{display:flex;align-items:center;gap:7px;color:#c2ccdc}.status-dot{width:7px;height:7px;flex:none;background:var(--green);display:inline-block;border-radius:50%;box-shadow:0 0 8px #22c99f25}.help-link{color:#96a4bc}.help-link:hover{color:white}.notice{background:#182d48;color:#c8dfff;border-bottom:1px solid #3c557b;padding:10px 20px;font-size:12px;line-height:1.5}.notice[data-type="error"]{background:#35212a;color:#ffd5d8;border-color:#6e3440}.notice[data-type="warn"]{background:#362d20;color:#ffdeb0;border-color:#675236}.main-grid{display:grid;grid-template-columns:51px minmax(300px,1fr) 330px;min-height:555px;flex:1;max-height:calc(100vh - 214px)}.drawbar{background:#111b2d;border-right:1px solid var(--border);padding:16px 4px;display:flex;flex-direction:column;align-items:center;gap:9px}.drawbar-label{font-size:8px;font-weight:800;letter-spacing:1px;color:#67758c;margin-bottom:7px}.tool{background:transparent;color:#8999b0;border:1px solid transparent;border-radius:7px;width:34px;height:34px;font-weight:600;font-size:20px}.tool:hover,.tool.active{color:#dce8ff;background:#223451;border-color:#355073}.ema-tool{font-size:10px;letter-spacing:-.5px}.drawbar-divider{background:var(--border);height:1px;width:26px;margin:4px 0}.chart-workspace{min-width:0;background:#0c1423;display:flex;flex-direction:column}.chart-head{display:flex;align-items:center;justify-content:space-between;padding:18px 25px 10px;gap:20px}.chart-title-row{display:flex;align-items:center;gap:10px}.chart-head h1{font-size:21px;letter-spacing:-.5px;margin:0}.chart-head p{font-size:11px;margin:8px 0 0}.tf-badge{background:#202d44;color:#bdc9db;font-size:10px;font-weight:700;border:1px solid #304057;border-radius:4px;padding:4px 7px}.replay-badge{font-size:10px;font-weight:800;color:#78a8ff;background:#182d50;border:1px solid #29476e;padding:5px 7px;border-radius:4px}.chart-price-block{display:flex;flex-direction:column;text-align:right}.chart-price-block strong{font-size:25px;letter-spacing:-.7px;font-variant-numeric:tabular-nums}.muted{color:var(--muted)}.small{font-size:11px}.tiny{font-size:10px}.chart-price-block span{font-size:11px;margin-top:5px}.chart-meta{padding:4px 25px 12px;display:flex;justify-content:space-between;align-items:center;color:#8a99b0;font-size:10px;font-variant-numeric:tabular-nums}.chart-meta>div{display:flex;gap:16px}.chart-meta i{width:10px;height:2px;display:inline-block;vertical-align:middle;margin-right:5px}.legend-ema9 i{background:#83a9fc}.legend-ema21 i{background:#f5b66b}.chart-area{min-height:380px;flex:1;position:relative;overflow:hidden}#chart{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}.empty-state{position:absolute;inset:0;background:#0d1627ed;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;padding:25px;pointer-events:auto}.empty-icon{font-size:44px;color:#5e85be}.empty-state h2{margin:0;font-size:19px;letter-spacing:-.3px}.empty-state p{font-size:12px;max-width:410px;color:#91a0b7;line-height:1.6;margin:1px 0 12px}.chart-foot{height:35px;border-top:1px solid #253147;display:flex;align-items:center;gap:15px;padding:0 18px;color:#8a99b0;font-size:10px}.chip{display:flex;align-items:center;gap:7px;max-width:250px;overflow:hidden;white-space:nowrap}.flex-gap{flex:1}.trade-panel{background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:auto}.panel-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px 14px}.panel-head h2{font-size:17px;letter-spacing:-.3px;margin:5px 0 0}.kicker{font-size:9px;letter-spacing:1.1px;font-weight:800;color:#8a99b0}.paper-label{font-size:9px;font-weight:800;letter-spacing:1px;color:#78a8ff;border:1px solid #3d5684;border-radius:4px;padding:5px 7px}.account-card{background:#19273d;border:1px solid #31425f;border-radius:10px;margin:0 15px 9px;padding:15px 16px}.account-card>strong{display:block;font-size:27px;font-weight:750;letter-spacing:-.8px;margin:5px 0 15px;font-variant-numeric:tabular-nums}.account-stats{display:flex;flex-direction:column;gap:8px;font-size:10px}.account-stats span{display:flex;justify-content:space-between;align-items:center;color:#9eadc3}.account-stats b{font-size:11px;color:#e5ebf4;font-variant-numeric:tabular-nums}.side-section{padding:14px 19px;border-bottom:1px solid var(--border)}.section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px}.section-title h3{font-size:12px;margin:0;font-weight:800}.input-name{display:flex;justify-content:space-between;font-size:10px;color:#a2b0c4;margin-bottom:7px}.side-section input[type=number]{width:100%;border:1px solid #36455d;background:#0d182a;color:#eaf1fc;border-radius:6px;padding:10px 12px;font-size:14px}.input-hint{margin:7px 0 14px;color:#8695ad;font-size:10px;display:flex;justify-content:space-between}.input-hint span{color:#cdd7e6}.order-buttons{display:flex;gap:9px}.order-buttons .btn{flex:1;padding:11px 8px}.btn-buy{background:#167b68;color:#eafff9}.btn-buy:hover{background:#209d83}.btn-sell{background:#9e394c;color:#fff0f1}.btn-sell:hover{background:#bd4659}.cost-note{color:#8493aa;font-size:10px;line-height:1.55;margin-top:12px}.cost-note span{color:#b1bed0}.placeholder{border:1px dashed #33435c;color:#687f9f;text-align:center;font-size:11px;padding:16px 10px;border-radius:7px}.position-block{border:1px solid #33435c;border-radius:7px;padding:11px;background:#152339;margin-bottom:9px;font-size:11px}.position-block>div:first-child{display:flex;justify-content:space-between;margin-bottom:12px}.position-grid{display:grid;grid-template-columns:1fr auto;gap:8px;color:#92a3bd}.position-grid b{color:#eef2fa}.btn-full{width:100%}.journal-section{min-height:120px;flex:1}.link-btn,.text-btn{background:transparent;border:0;color:#86b2ff;font-size:10px;padding:5px}.link-btn:hover,.text-btn:hover{text-decoration:underline}.journal{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:7px}.journal-row{border:1px solid #2a3a55;background:#16243a;border-radius:7px;padding:9px;font-size:10px}.journal-row-head{display:flex;justify-content:space-between;margin-bottom:6px}.journal-row-foot{display:flex;justify-content:space-between;color:#8f9eb4}.profit{color:var(--green)!important}.loss{color:var(--red)!important}.journal-stats{display:flex;justify-content:space-between;gap:6px;margin-top:13px;padding-top:12px;border-top:1px solid #29384e;font-size:10px;color:#8797b0}.journal-stats span{display:flex;flex-direction:column;gap:5px}.journal-stats b{font-size:12px;color:#e9eff8;font-variant-numeric:tabular-nums}.replay-dock{border-top:1px solid #324157;background:#121f33;padding:14px 16px;display:flex;align-items:center;gap:17px;min-height:93px}.play-buttons{display:flex;gap:5px;align-items:center}.icon-btn{border:0;border-radius:7px;background:#1b2a40;color:#b7c7dc;height:35px;min-width:35px;font-size:18px}.icon-btn:hover{background:#2a3c56}.play-btn{border:0;background:var(--blue);color:#fff;width:42px;height:42px;font-size:16px;border-radius:50%;padding-left:3px}.play-btn:hover{background:#6c9ffc}.replay-range{min-width:160px;flex:1}.replay-topline{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:10px;margin-bottom:10px}.replay-topline>div{display:flex;gap:12px;align-items:center}.replay-topline b{font-size:11px;color:#c9d5e5}.date-label{color:#92a3bb;font-variant-numeric:tabular-nums}input[type=range]{accent-color:#75a8ff;width:100%;cursor:pointer}.speed-control{display:flex;align-items:center;gap:8px}.speed-control select{padding:7px;font-size:12px;min-width:63px}.footer{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-top:1px solid var(--border);background:#0b1320;padding:9px 18px;color:#697f9b;font-size:9px;line-height:1.5}.footer strong{color:#a7b6cc}@media(max-width:1100px){.topbar{flex-wrap:wrap}.topbar-right{display:none}.main-grid{grid-template-columns:48px minmax(260px,1fr) 285px}.trade-panel{width:auto}.replay-dock{flex-wrap:wrap}.chart-head{padding-left:16px;padding-right:16px}}@media(max-width:760px){.topbar{gap:12px;padding:10px}.topbar-divider{display:none}.topbar-fields{width:100%;flex-wrap:wrap}.topbar-right{display:none}.main-grid{grid-template-columns:40px minmax(0,1fr);max-height:none;min-height:0}.chart-workspace{min-height:450px}.chart-area{min-height:305px}.trade-panel{grid-column:1/3;border-top:1px solid var(--border);border-left:0;display:grid;grid-template-columns:1fr 1fr;overflow:visible}.panel-head{grid-column:1/3}.account-card{margin:0 10px 10px}.trade-panel .side-section{border-bottom:1px solid var(--border)}.journal-section{grid-column:1/3}.replay-dock{gap:12px}.replay-range{order:2;flex-basis:100%}.footer{flex-direction:column;gap:5px}.chart-head h1{font-size:17px}.chart-price-block strong{font-size:18px}.chart-meta{padding:8px}.chart-meta>div{display:none}.chart-foot{gap:7px}}@media(max-width:410px){.trade-panel{display:block}.replay-dock .btn{font-size:10px;padding:7px}.chart-head{padding:12px 9px}.chart-head p{font-size:9px}.chart-price-block strong{font-size:16px}.date-label{display:none}}
+  <style>[hidden]{display:none!important}
+:root{color-scheme:dark;--bg:#0b1120;--panel:#111b2d;--panel2:#151f34;--border:#273247;--text:#e7ecf4;--muted:#8997ad;--blue:#4e89f9;--green:#22c99f;--red:#f06a76;--orange:#f2b96b;--brand:#71a8ff;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-synthesis:none}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.4;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}a{color:inherit;text-decoration:none}.app-shell{min-height:100vh;display:flex;flex-direction:column}.topbar{min-height:73px;background:#0f192b;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:20px;padding:10px 20px}.brand{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:800;letter-spacing:-.7px;white-space:nowrap}.brand-icon{display:grid;place-items:center;background:var(--blue);height:29px;width:29px;border-radius:8px;color:#fff;font-size:27px;font-weight:500}.brand-accent{color:#84b2ff}.brand-beta{font-size:9px;letter-spacing:1px;color:#a5b2cc;border:1px solid #304560;border-radius:4px;padding:4px 5px;margin-left:1px}.topbar-divider{width:1px;height:31px;background:var(--border)}.topbar-fields{display:flex;align-items:center;gap:10px;min-width:0}.field-label{display:flex;align-items:flex-start;gap:5px;flex-direction:column;font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px}.field-label input,.field-label select,.speed-control select{background:#17243a;color:var(--text);border:1px solid #2b3950;padding:8px 11px;border-radius:7px;height:35px}.symbol-wrap input{width:123px;font-size:13px;font-weight:800;letter-spacing:.4px}.interval-wrap select{min-width:104px}.btn{border:1px solid transparent;border-radius:7px;padding:9px 14px;font-size:12px;font-weight:700;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:5px;transition:background .15s,border-color .15s}.btn-primary{background:var(--blue);color:white}.btn-primary:hover{background:#689fff}.btn-outline{border-color:#3c4a61;background:#19263b;color:#d7dfed}.btn-outline:hover{background:#25354e}.file-btn{cursor:pointer}.topbar-right{margin-left:auto;display:flex;align-items:center;gap:16px;font-size:11px;white-space:nowrap}.privacy-pill{display:flex;align-items:center;gap:7px;color:#c2ccdc}.status-dot{width:7px;height:7px;flex:none;background:var(--green);display:inline-block;border-radius:50%;box-shadow:0 0 8px #22c99f25}.help-link{color:#96a4bc}.help-link:hover{color:white}.notice{background:#182d48;color:#c8dfff;border-bottom:1px solid #3c557b;padding:10px 20px;font-size:12px;line-height:1.5}.notice[data-type="error"]{background:#35212a;color:#ffd5d8;border-color:#6e3440}.notice[data-type="warn"]{background:#362d20;color:#ffdeb0;border-color:#675236}.main-grid{display:grid;grid-template-columns:51px minmax(300px,1fr) 330px;min-height:555px;flex:1;max-height:calc(100vh - 214px)}.drawbar{background:#111b2d;border-right:1px solid var(--border);padding:16px 4px;display:flex;flex-direction:column;align-items:center;gap:9px}.drawbar-label{font-size:8px;font-weight:800;letter-spacing:1px;color:#67758c;margin-bottom:7px}.tool{background:transparent;color:#8999b0;border:1px solid transparent;border-radius:7px;width:34px;height:34px;font-weight:600;font-size:20px}.tool:hover,.tool.active{color:#dce8ff;background:#223451;border-color:#355073}.ema-tool{font-size:10px;letter-spacing:-.5px}.drawbar-divider{background:var(--border);height:1px;width:26px;margin:4px 0}.chart-workspace{min-width:0;background:#0c1423;display:flex;flex-direction:column}.chart-head{display:flex;align-items:center;justify-content:space-between;padding:18px 25px 10px;gap:20px}.chart-title-row{display:flex;align-items:center;gap:10px}.chart-head h1{font-size:21px;letter-spacing:-.5px;margin:0}.chart-head p{font-size:11px;margin:8px 0 0}.tf-badge{background:#202d44;color:#bdc9db;font-size:10px;font-weight:700;border:1px solid #304057;border-radius:4px;padding:4px 7px}.replay-badge{font-size:10px;font-weight:800;color:#78a8ff;background:#182d50;border:1px solid #29476e;padding:5px 7px;border-radius:4px}.chart-price-block{display:flex;flex-direction:column;text-align:right}.chart-price-block strong{font-size:25px;letter-spacing:-.7px;font-variant-numeric:tabular-nums}.muted{color:var(--muted)}.small{font-size:11px}.tiny{font-size:10px}.chart-price-block span{font-size:11px;margin-top:5px}.chart-meta{padding:4px 25px 12px;display:flex;justify-content:space-between;align-items:center;color:#8a99b0;font-size:10px;font-variant-numeric:tabular-nums}.chart-meta>div{display:flex;gap:16px}.chart-meta i{width:10px;height:2px;display:inline-block;vertical-align:middle;margin-right:5px}.legend-ema9 i{background:#83a9fc}.legend-ema21 i{background:#f5b66b}.chart-area{min-height:380px;flex:1;position:relative;overflow:hidden}#chart{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}.empty-state{position:absolute;inset:0;background:#0d1627ed;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;padding:25px;pointer-events:auto}.empty-icon{font-size:44px;color:#5e85be}.empty-state h2{margin:0;font-size:19px;letter-spacing:-.3px}.empty-state p{font-size:12px;max-width:410px;color:#91a0b7;line-height:1.6;margin:1px 0 12px}.chart-foot{height:35px;border-top:1px solid #253147;display:flex;align-items:center;gap:15px;padding:0 18px;color:#8a99b0;font-size:10px}.chip{display:flex;align-items:center;gap:7px;max-width:250px;overflow:hidden;white-space:nowrap}.flex-gap{flex:1}.trade-panel{background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:auto}.panel-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px 14px}.panel-head h2{font-size:17px;letter-spacing:-.3px;margin:5px 0 0}.kicker{font-size:9px;letter-spacing:1.1px;font-weight:800;color:#8a99b0}.paper-label{font-size:9px;font-weight:800;letter-spacing:1px;color:#78a8ff;border:1px solid #3d5684;border-radius:4px;padding:5px 7px}.account-card{background:#19273d;border:1px solid #31425f;border-radius:10px;margin:0 15px 9px;padding:15px 16px}.account-card>strong{display:block;font-size:27px;font-weight:750;letter-spacing:-.8px;margin:5px 0 15px;font-variant-numeric:tabular-nums}.account-stats{display:flex;flex-direction:column;gap:8px;font-size:10px}.account-stats span{display:flex;justify-content:space-between;align-items:center;color:#9eadc3}.account-stats b{font-size:11px;color:#e5ebf4;font-variant-numeric:tabular-nums}.side-section{padding:14px 19px;border-bottom:1px solid var(--border)}.section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px}.section-title h3{font-size:12px;margin:0;font-weight:800}.input-name{display:flex;justify-content:space-between;font-size:10px;color:#a2b0c4;margin-bottom:7px}.side-section input[type=number]{width:100%;border:1px solid #36455d;background:#0d182a;color:#eaf1fc;border-radius:6px;padding:10px 12px;font-size:14px}.input-hint{margin:7px 0 14px;color:#8695ad;font-size:10px;display:flex;justify-content:space-between}.input-hint span{color:#cdd7e6}.order-buttons{display:flex;gap:9px}.order-buttons .btn{flex:1;padding:11px 8px}.btn-buy{background:#167b68;color:#eafff9}.btn-buy:hover{background:#209d83}.btn-sell{background:#9e394c;color:#fff0f1}.btn-sell:hover{background:#bd4659}.cost-note{color:#8493aa;font-size:10px;line-height:1.55;margin-top:12px}.cost-note span{color:#b1bed0}.placeholder{border:1px dashed #33435c;color:#687f9f;text-align:center;font-size:11px;padding:16px 10px;border-radius:7px}.position-block{border:1px solid #33435c;border-radius:7px;padding:11px;background:#152339;margin-bottom:9px;font-size:11px}.position-block>div:first-child{display:flex;justify-content:space-between;margin-bottom:12px}.position-grid{display:grid;grid-template-columns:1fr auto;gap:8px;color:#92a3bd}.position-grid b{color:#eef2fa}.btn-full{width:100%}.journal-section{min-height:120px;flex:1}.link-btn,.text-btn{background:transparent;border:0;color:#86b2ff;font-size:10px;padding:5px}.link-btn:hover,.text-btn:hover{text-decoration:underline}.journal{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:7px}.journal-row{border:1px solid #2a3a55;background:#16243a;border-radius:7px;padding:9px;font-size:10px}.journal-row-head{display:flex;justify-content:space-between;margin-bottom:6px}.journal-row-foot{display:flex;justify-content:space-between;color:#8f9eb4}.profit{color:var(--green)!important}.loss{color:var(--red)!important}.journal-stats{display:flex;justify-content:space-between;gap:6px;margin-top:13px;padding-top:12px;border-top:1px solid #29384e;font-size:10px;color:#8797b0}.journal-stats span{display:flex;flex-direction:column;gap:5px}.journal-stats b{font-size:12px;color:#e9eff8;font-variant-numeric:tabular-nums}.replay-dock{border-top:1px solid #324157;background:#121f33;padding:14px 16px;display:flex;align-items:center;gap:17px;min-height:93px}.play-buttons{display:flex;gap:5px;align-items:center}.icon-btn{border:0;border-radius:7px;background:#1b2a40;color:#b7c7dc;height:35px;min-width:35px;font-size:18px}.icon-btn:hover{background:#2a3c56}.play-btn{border:0;background:var(--blue);color:#fff;width:42px;height:42px;font-size:16px;border-radius:50%;padding-left:3px}.play-btn:hover{background:#6c9ffc}.replay-range{min-width:160px;flex:1}.replay-topline{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:10px;margin-bottom:10px}.replay-topline>div{display:flex;gap:12px;align-items:center}.replay-topline b{font-size:11px;color:#c9d5e5}.date-label{color:#92a3bb;font-variant-numeric:tabular-nums}input[type=range]{accent-color:#75a8ff;width:100%;cursor:pointer}.speed-control{display:flex;align-items:center;gap:8px}.speed-control select{padding:7px;font-size:12px;min-width:63px}.footer{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-top:1px solid var(--border);background:#0b1320;padding:9px 18px;color:#697f9b;font-size:9px;line-height:1.5}.footer strong{color:#a7b6cc}@media(max-width:1100px){.topbar{flex-wrap:wrap}.topbar-right{display:none}.main-grid{grid-template-columns:48px minmax(260px,1fr) 285px}.trade-panel{width:auto}.replay-dock{flex-wrap:wrap}.chart-head{padding-left:16px;padding-right:16px}}@media(max-width:760px){.topbar{gap:12px;padding:10px}.topbar-divider{display:none}.topbar-fields{width:100%;flex-wrap:wrap}.topbar-right{display:none}.main-grid{grid-template-columns:40px minmax(0,1fr);max-height:none;min-height:0}.chart-workspace{min-height:450px}.chart-area{min-height:305px}.trade-panel{grid-column:1/3;border-top:1px solid var(--border);border-left:0;display:grid;grid-template-columns:1fr 1fr;overflow:visible}.panel-head{grid-column:1/3}.account-card{margin:0 10px 10px}.trade-panel .side-section{border-bottom:1px solid var(--border)}.journal-section{grid-column:1/3}.replay-dock{gap:12px}.replay-range{order:2;flex-basis:100%}.footer{flex-direction:column;gap:5px}.chart-head h1{font-size:17px}.chart-price-block strong{font-size:18px}.chart-meta{padding:8px}.chart-meta>div{display:none}.chart-foot{gap:7px}}@media(max-width:410px){.trade-panel{display:block}.replay-dock .btn{font-size:10px;padding:7px}.chart-head{padding:12px 9px}.chart-head p{font-size:9px}.chart-price-block strong{font-size:16px}.date-label{display:none}}
 
 .date-wrap input{width:132px;color:#d5dff0;font-weight:650;font-size:11px}.date-wrap input::-webkit-calendar-picker-indicator{filter:invert(.7)}@media(max-width:470px){.date-wrap input{width:120px}}
 </style>
@@ -21,6 +22,7 @@
         <label class="field-label interval-wrap"><span>TIMEFRAME</span><select id="timeframe" aria-label="Chart timeframe"><option value="1m">1 min</option><option value="3m">3 min</option><option value="5m">5 min</option><option value="15m" selected>15 min</option><option value="30m">30 min</option><option value="1h">1 hour</option><option value="2h">2 hour</option><option value="4h">4 hour</option><option value="6h">6 hour</option><option value="12h">12 hour</option><option value="1d">1 day</option><option value="1w">1 week</option></select></label>
         <label class="field-label date-wrap" title="Optional historical start date (UTC)"><span>START DATE (UTC)</span><input id="startDate" type="date" aria-label="Optional historical start date in UTC"></label>
         <button id="loadMarket" class="btn btn-primary" type="button">Load data</button>
+        <button id="loadLatest" class="btn btn-outline" type="button" title="Fetch the latest real crypto candles from public exchange APIs">Latest candles</button>
         <label class="file-btn btn btn-outline" title="Load real OHLCV candles for any stock from a CSV file">Import CSV<input type="file" id="csvFile" accept=".csv,text/csv" hidden></label>
       </div>
       <div class="topbar-right"><span class="privacy-pill"><span class="status-dot"></span>Local paper trading only</span><a class="help-link" href="#how-to" title="How this works">About <span aria-hidden="true">↗</span></a></div>
@@ -33,7 +35,7 @@
       <section class="chart-workspace" aria-label="Historical market chart">
         <div class="chart-head"><div><div class="chart-title-row"><h1 id="chartTitle">BTC/USDT</h1><span id="timeframeLabel" class="tf-badge">15m</span><span class="replay-badge">● REPLAY</span></div><p id="dataInfo" class="muted">Import a CSV or load real crypto candles to begin</p></div><div class="chart-price-block"><strong id="lastPrice">—</strong><span id="lastChange" class="muted">No price data</span></div></div>
         <div class="chart-meta"><span id="ohlcInfo">O — &nbsp; H — &nbsp; L — &nbsp; C —</span><div><span class="legend-ema9"><i></i> EMA 9</span><span class="legend-ema21"><i></i> EMA 21</span></div></div>
-        <div class="chart-area" id="chartArea"><canvas id="chart" aria-label="Interactive historical candlestick chart" role="img"></canvas><div class="empty-state" id="emptyState"><span class="empty-icon">▥</span><h2>Practice the market without future candles</h2><p>Load BTC/USDT historical data, or import OHLCV CSV data for a stock, ETF or other market.</p><button class="btn btn-primary" id="emptyLoad">Load BTC/USDT candles</button></div></div>
+        <div class="chart-area" id="chartArea"><canvas id="chart" aria-label="Interactive historical candlestick chart" role="img"></canvas><div class="empty-state" id="emptyState"><span class="empty-icon">▥</span><h2>Practice the market without future candles</h2><p>Load the bundled real BTC/USDT 15m March 2026 archive instantly, fetch newer candles online, or import OHLCV CSV data for stocks.</p><button class="btn btn-primary" id="emptyLoad">Load BTC/USDT archive</button></div></div>
         <div class="chart-foot"><div class="chip"><span class="status-dot"></span><span id="sourceLabel">Waiting for data</span></div><span id="candleCount">0 candles</span><span id="chartTimestamp">—</span><span class="flex-gap"></span><span class="muted">Scroll to zoom · Drag to pan</span></div>
       </section>
       <aside class="trade-panel" aria-label="Paper trading"><div class="panel-head"><div><span class="kicker">SIMULATED ACCOUNT</span><h2>Paper Trading</h2></div><span class="paper-label">DEMO</span></div><div class="account-card"><span class="muted small">Total equity</span><strong id="equity">$100,000.00</strong><div class="account-stats"><span>Realized balance <b id="balance">$100,000.00</b></span><span>Unrealized P&amp;L <b id="unrealized">$0.00</b></span></div></div>
@@ -43,8 +45,9 @@
       </aside>
     </div>
     <section class="replay-dock" aria-label="Replay controls"><div class="play-buttons"><button class="icon-btn" id="resetReplay" title="Restart replay and reset paper account">↺</button><button class="icon-btn" id="stepBack" title="Step back one candle (resets trades)">⏮</button><button class="play-btn" id="playPause" title="Play or pause (space)" aria-label="Play">▶</button><button class="icon-btn" id="stepNext" title="Reveal one more candle (right arrow)">⏭</button></div><div class="replay-range"><div class="replay-topline"><div><span class="kicker">BAR REPLAY</span><b id="replayCounter">0 / 0 candles</b></div><span id="replayDate" class="date-label">Choose a data source to begin</span></div><input id="replaySlider" type="range" value="0" min="0" max="100" disabled aria-label="Replay position"></div><div class="speed-control"><span class="kicker">SPEED</span><select id="speed"><option value="1">1×</option><option value="2">2×</option><option value="5" selected>5×</option><option value="10">10×</option><option value="25">25×</option><option value="50">50×</option></select></div><button class="btn btn-outline" id="loadMore" title="Load more next candles when available" disabled>Load next data +</button><button class="text-btn" id="resetAccount" title="Reset simulated balance and trades">Reset account</button></section>
-    <footer class="footer" id="how-to"><span><strong>ReplayLab</strong> · A historical practice tool, not a brokerage.</span><span>Crypto candles from Binance.US or Binance market-data endpoint when available. Stocks require user-provided CSV. Historical coverage, fills and data access vary by source. No real orders are sent.</span></footer>
+    <footer class="footer" id="how-to"><span><strong>ReplayLab</strong> · A historical practice tool, not a brokerage.</span><span>Bundled March 2026 BTC/USDT 15m archive plus online Coinbase, Kraken, and Binance sources. Stocks require CSV. Historical coverage, fills and data access vary by source. No real orders are sent.</span></footer>
   </div>
+
   <script>/* ReplayLab. Free local paper-trading simulator. No exchange orders or broker integration. */
 (() => {
   'use strict';
@@ -79,7 +82,7 @@
     $('replaySlider').disabled = !ready;
     $('loadMore').disabled = !ready || state.mode !== 'crypto' || state.loadBusy;
     $('closeBtn').disabled = !state.position;
-    $('loadMarket').disabled = state.loadBusy;
+    $('loadMarket').disabled = state.loadBusy; $('loadLatest').disabled = state.loadBusy;
   }
   function clearTimer() { if (state.timer) clearInterval(state.timer); state.timer = null; state.playing = false; }
   function setPlaying(playing) {
@@ -122,46 +125,147 @@
     if (match) $('timeframe').value = timeframe;
     clearMessage(); updateUI(); saveSession();
   }
-  async function fetchKlines(symbol, interval, opts = {}) {
-    const params = new URLSearchParams({ symbol, interval, limit: String(opts.limit || 1000) });
+  // Historical data is fetched on demand. All providers use actual OHLCV records; no synthetic prices.
+  const INTERVAL_SECONDS = { '1m': 60, '3m': 180, '5m': 300, '15m': 900, '30m': 1800,
+    '1h': 3600, '2h': 7200, '4h': 14400, '6h': 21600, '12h': 43200, '1d': 86400, '1w': 604800 };
+  async function requestJson(url, provider) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6500);
+    try {
+      const response = await fetch(url, { signal: controller.signal, cache: 'no-store', headers: { 'Accept': 'application/json' } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const body = await response.json();
+      return body;
+    } catch (err) {
+      if (err?.name === 'AbortError') throw new Error(`${provider} timed out`);
+      throw new Error(`${provider}: ${err?.message || 'network request failed'}`);
+    } finally { clearTimeout(timeout); }
+  }
+  function coinbaseProduct(symbol) {
+    for (const quote of ['USDT','USDC','USD','EUR','GBP','BTC']) {
+      if (symbol.endsWith(quote) && symbol.length > quote.length) {
+        return `${symbol.slice(0, -quote.length)}-${quote}`;
+      }
+    }
+    return null;
+  }
+  function onlyCompleted(candles, interval) {
+    const duration = INTERVAL_SECONDS[interval];
+    const now = Date.now() / 1000;
+    return candles.filter(c => Number.isFinite(c.time) && c.time + duration <= now);
+  }
+  async function fetchCoinbase(symbol, interval, opts) {
+    // Coinbase Exchange supports these six native granularities; don't interpolate missing bars.
+    const granularity = { '1m': 60, '5m': 300, '15m': 900, '1h': 3600, '6h': 21600, '1d': 86400 }[interval];
+    const product = coinbaseProduct(symbol);
+    if (!granularity || !product) throw new Error('Coinbase does not offer this interval or pair format.');
+    const start = Number(opts.startTime || Date.now() - 298 * granularity * 1000);
+    const end = Math.min(Date.now() + granularity * 1000, start + 298 * granularity * 1000);
+    if (end <= start) throw new Error('Selected historical date is beyond the latest available candles.');
+    const query = new URLSearchParams({ granularity: String(granularity), start: new Date(start).toISOString(), end: new Date(end).toISOString() });
+    const url = `https://api.exchange.coinbase.com/products/${encodeURIComponent(product)}/candles?${query}`;
+    const data = await requestJson(url, 'Coinbase Exchange');
+    if (!Array.isArray(data)) throw new Error(`Coinbase Exchange: ${data?.message || 'No candle list returned'}`);
+    const candles = onlyCompleted(data.map(d => ({
+      time: Number(d[0]), low: Number(d[1]), high: Number(d[2]), open: Number(d[3]), close: Number(d[4]), volume: Number(d[5])
+    })), interval).filter(c => !opts.startTime || c.time >= opts.startTime/1000);
+    if (candles.length < 10) throw new Error('Coinbase Exchange: Fewer than 10 candles for that date / pair.');
+    return { data: candles, source: `Coinbase Exchange · ${product}` };
+  }
+  async function fetchKraken(symbol, interval, opts) {
+    const minutes = { '1m': 1, '5m': 5, '15m': 15, '30m': 30, '1h': 60, '4h': 240, '1d': 1440, '1w': 10080 }[interval];
+    if (!minutes) throw new Error('Kraken does not provide this native interval.');
+    const duration = minutes * 60 * 1000;
+    // Kraken only provides the most recent 720 OHLC candles; never substitute a later date for an old one.
+    if (opts.startTime && opts.startTime < Date.now() - 720*duration) {
+      throw new Error('Kraken retains only the most recent 720 candles at this interval.');
+    }
+    const pair = symbol.startsWith('BTC') ? 'XBT' + symbol.slice(3) : symbol;
+    const query = new URLSearchParams({ pair, interval: String(minutes) });
+    if (opts.startTime) query.set('since', String(Math.floor(opts.startTime / 1000)));
+    const json = await requestJson('https://api.kraken.com/0/public/OHLC?' + query, 'Kraken');
+    if (!json || !Array.isArray(json.error) || json.error.length) throw new Error('Kraken: ' + (json?.error?.join('; ') || 'invalid response'));
+    const result = json.result || {};
+    const key = Object.keys(result).find(k => k !== 'last' && Array.isArray(result[k]));
+    if (!key) throw new Error('Kraken returned no OHLC candles for that pair.');
+    const candles = onlyCompleted(result[key].map(d => ({
+      time: Number(d[0]), open: Number(d[1]), high: Number(d[2]), low: Number(d[3]), close: Number(d[4]), volume: Number(d[6])
+    })), interval).filter(c => !opts.startTime || c.time >= opts.startTime / 1000);
+    if (candles.length < 10) throw new Error('Kraken: Fewer than 10 completed candles for the selected date.');
+    return { data: candles, source: 'Kraken · ' + pair };
+  }
+  async function fetchBinance(host, source, symbol, interval, opts) {
+    const params = new URLSearchParams({ symbol, interval, limit: String(Math.min(1000, opts.limit || 1000)) });
     if (opts.startTime) params.set('startTime', String(opts.startTime));
     if (opts.endTime) params.set('endTime', String(opts.endTime));
-    let lastErr = null;
-    const hosts = [
-      ['Binance.US', 'https://api.binance.us/api/v3/klines'],
-      ['Binance Public Data', 'https://data-api.binance.vision/api/v3/klines']
-    ];
-    for (const [name, url] of hosts) {
-      try {
-        const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 12000);
-        let response;
-        try { response = await fetch(`${url}?${params}`, { signal: controller.signal, cache: 'no-store' }); }
-        finally { clearTimeout(timeout); }
-        if (!response.ok) throw new Error(`${name} responded with HTTP ${response.status}`);
-        const data = await response.json();
-        if (!Array.isArray(data) || !data.length) throw new Error('No candles returned for this symbol/date.');
-        const mapped = data.map(d => ({ time: Number(d[0]) / 1000, open: Number(d[1]), high: Number(d[2]), low: Number(d[3]), close: Number(d[4]), volume: Number(d[5]) }));
-        return { data: mapped, source: name };
-      } catch(e) { lastErr = e; }
-    }
-    throw new Error(`Could not load crypto data from either public endpoint. ${lastErr ? lastErr.message : ''} Network, location or browser CORS restrictions may apply. You can still import an OHLCV CSV file.`);
+    const body = await requestJson(`${host}?${params}`, source);
+    if (!Array.isArray(body)) throw new Error(`${source}: ${body?.msg || 'Invalid data'}`);
+    const candles = onlyCompleted(body.map(d => ({
+      time: Number(d[0])/1000, open: Number(d[1]), high: Number(d[2]), low: Number(d[3]), close: Number(d[4]), volume: Number(d[5])
+    })), interval);
+    if (candles.length < 10) throw new Error(`${source}: Fewer than 10 completed candles.`);
+    return { data: candles, source };
   }
-  async function loadMarket() {
+  async function fetchKlines(symbol, interval, opts = {}) {
+    // Try exchange APIs concurrently. The first valid answer wins rather than waiting for blocked domains.
+    const sources = [
+      () => fetchCoinbase(symbol, interval, opts),
+      () => fetchKraken(symbol, interval, opts),
+      () => fetchBinance('https://api.binance.us/api/v3/klines', 'Binance.US', symbol, interval, opts),
+      () => fetchBinance('https://data-api.binance.vision/api/v3/klines', 'Binance Public Data', symbol, interval, opts)
+    ];
+    try { return await Promise.any(sources.map(fn => fn())); }
+    catch (errors) {
+      const messages = (errors.errors || []).map(e => e.message || String(e));
+      throw new Error('Could not load live crypto candles from Coinbase, Kraken, or Binance. ' +
+        messages.join(' | ') + '. You can still use the bundled BTC/USDT 15m archive or Import CSV.');
+    }
+  }
+  async function loadArchive(selectedDate, symbol, timeframe) {
+    const response = await fetch('./data/btcusdt-15m-2026-03.csv', { cache: 'force-cache' });
+    if (!response.ok) throw new Error(`Bundled archive unavailable (HTTP ${response.status}).`);
+    const text = await response.text();
+    let candles = parseCsv(text);
+    if (selectedDate) {
+      const startSec = Date.parse(selectedDate + 'T00:00:00Z') / 1000;
+      candles = candles.filter(c => c.time >= startSec);
+    }
+    if (candles.length < 10) throw new Error('The bundled archive has no candles for this date. Select another date or use Latest candles.');
+    prepareCandles(candles, 'Binance BTC/USDT · March 2026 archived candles', 'archive', symbol, timeframe);
+    showMessage(`Loaded ${state.candles.length.toLocaleString()} real BTC/USDT 15m candles from March 2026 (bundled archive). No internet data API required. For newer candles, click “Latest candles”.`);
+  }
+  async function loadMarket(forceLatest = false) {
     if (state.loadBusy) return;
+    if (forceLatest) $('startDate').value = '';
     const symbol = $('symbol').value.toUpperCase().trim().replace(/[\s/\-]/g,'');
     const timeframe = $('timeframe').value;
     const selectedDate = $('startDate').value;
     const startTime = selectedDate ? Date.parse(selectedDate + 'T00:00:00Z') : undefined;
     if (selectedDate && (!Number.isFinite(startTime) || startTime > Date.now())) { showMessage('Choose a historical start date no later than today.', 'warn'); return; }
-    if (!/^[A-Z0-9]{5,20}$/.test(symbol)) { showMessage('Enter a valid crypto symbol such as BTCUSDT. To replay stocks, use Import CSV.', 'warn'); return; }
-    state.loadBusy = true; $('loadMarket').textContent = 'Loading…'; applyEnabled();
-    showMessage('Fetching real historical candles from public crypto market-data endpoints…');
+    if (!/^[A-Z0-9]{5,20}$/.test(symbol)) { showMessage('Enter a crypto pair such as BTCUSDT or BTCUSD. For stocks, use Import CSV.', 'warn'); return; }
+    state.loadBusy = true;
+    $('loadMarket').textContent = 'Loading…';
+    $('loadLatest').textContent = 'Loading…';
+    applyEnabled();
+    const archiveDate = !selectedDate || (selectedDate >= '2026-03-01' && selectedDate <= '2026-03-31');
+    const useArchive = !forceLatest && symbol === 'BTCUSDT' && timeframe === '15m' && archiveDate;
     try {
-      const r = await fetchKlines(symbol, timeframe, {limit:1000, startTime});
-      prepareCandles(r.data, r.source, 'crypto', symbol, timeframe);
-      showMessage(`Loaded ${r.data.length} real ${timeframe} candles for ${symbol} from ${r.source}. Replay is unlimited; available historical depth depends on the provider.`);
-    } catch(e) { showMessage(e.message, 'error'); }
-    finally { state.loadBusy = false; $('loadMarket').textContent = 'Load data'; applyEnabled(); }
+      if (useArchive) {
+        showMessage('Loading bundled BTC/USDT historical candles (March 2026)…');
+        try { await loadArchive(selectedDate, symbol, timeframe); return; }
+        catch (err) { showMessage(`Bundled archive unavailable (${err.message}). Trying online exchange sources…`, 'warn'); }
+      }
+      showMessage('Checking Coinbase, Kraken, and Binance for real historical candles…');
+      const result = await fetchKlines(symbol, timeframe, { limit: 1000, startTime });
+      prepareCandles(result.data, result.source, 'crypto', symbol, timeframe);
+      showMessage(`Loaded ${state.candles.length.toLocaleString()} ${timeframe} candles for ${symbol} from ${result.source}. Historical depth varies by exchange.`);
+    } catch (err) { showMessage(err?.message || 'Data loading failed. Try the bundled BTC/USDT archive or Import CSV.', 'error'); }
+    finally {
+      state.loadBusy = false;
+      $('loadMarket').textContent = 'Load data';
+      $('loadLatest').textContent = 'Latest candles';
+      applyEnabled();
+    }
   }
   async function loadMore() {
     if (state.loadBusy || state.mode !== 'crypto' || !state.candles.length) return;
@@ -265,7 +369,7 @@
     $('replaySlider').value=String(Math.max(state.replayStart,state.cursor));
     $('equity').textContent=money(equity()); $('balance').textContent=money(state.balance);
     const u=positionPnl(); $('unrealized').textContent=signedMoney(u); $('unrealized').className=u>=0?'profit':'loss';
-    $('quantityUnit').textContent=state.mode==='crypto'?state.symbol.replace(/USDT$/,''):'units';
+    $('quantityUnit').textContent=(state.mode==='crypto'||state.mode==='archive')?state.symbol.replace(/USDT$/,''):'units';
     const qty=Number($('quantity').value); $('notional').textContent=c&&Number.isFinite(qty)?money(Math.max(0,qty)*c.close):'—';
     $('positionEmpty').hidden=!!state.position; $('positionDetail').hidden=!state.position;
     $('positionCount').textContent=state.position?'1 open':'0 open';
@@ -386,9 +490,9 @@
     } catch(e){console.warn('Could not restore replay session',e);}
   }
   function initEvents() {
-    $('loadMarket').addEventListener('click',loadMarket);$('emptyLoad').addEventListener('click',loadMarket);
+    $('loadMarket').addEventListener('click',()=>loadMarket(false));$('emptyLoad').addEventListener('click',()=>loadMarket(false));$('loadLatest').addEventListener('click',()=>loadMarket(true));
     $('csvFile').addEventListener('change',e=>importCsv(e.target.files?.[0]));
-    $('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')loadMarket();});
+    $('symbol').addEventListener('keydown',e=>{if(e.key==='Enter')loadMarket(false);});
     $('quantity').addEventListener('input',updateUI);
     $('buyBtn').addEventListener('click',()=>execute('LONG'));
     $('shortBtn').addEventListener('click',()=>execute('SHORT'));
