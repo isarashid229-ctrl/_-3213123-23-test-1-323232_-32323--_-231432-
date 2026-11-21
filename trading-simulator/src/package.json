@@ -1,0 +1,1 @@
+{"name":"replaylab-academy","version":"2.0.0","private":true,"description":"Self-contained historical replay and trading education workspace","scripts":{"build":"node build.cjs","test":"node build.cjs && node --test tests/*.test.cjs"},"engines":{"node":">=20"}}

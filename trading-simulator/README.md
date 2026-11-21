@@ -1,48 +1,76 @@
-# ReplayLab — Public historical market replay
+# ReplayLab Academy 2.0
 
-**Website:** https://isarashid229-ctrl.github.io/_-3213123-23-test-1-323232_-32323--_-231432-/trading-simulator/
+A self-contained learning and paper-trading workspace. The published `index.html` embeds its styles, scripts, course, labs and 2,976-bar historical dataset. It starts without an exchange API or a separate CSV fetch.
 
-**Repository folder:** https://github.com/isarashid229-ctrl/_-3213123-23-test-1-323232_-32323--_-231432-/tree/main/trading-simulator
+## What's included
 
-ReplayLab is a static GitHub Pages web application for educational chart replay and simulated trades. It works without an account, paid plan, or private API key.
+- Historical candle replay with no future bars drawn, EMA 9/21, zoom, pan, price levels, play/pause, stepping, timeline navigation and random starting points.
+- Long/short paper trades, cost-aware position sizing, fixed stop/target exits, gap and intrabar ambiguity handling, realized balance and marked equity.
+- Ten course modules, 30 original lessons, 40 quiz questions with explanations and saved best scores.
+- Eight interactive labs, each with five tasks: candles, structure, levels, sizing, orders, risk/reward, expectancy and discipline. Synthetic teaching charts are explicitly labeled.
+- Eight problem-specific learning paths linked to lessons, labs and 12 official video resources from Schwab, Fidelity and CME Group.
+- A journal with trade plans, self-reviews, mistake tags, net results, average R, expectancy, win rate and closed-trade drawdown.
+- Browser-local persistence, progress backup/restore, journal CSV export, CSV import and a searchable glossary.
 
-## Start trading practice
+## Build and test
 
-1. Open the website.
-2. Leave **BTCUSDT**, **15m**, and the optional date blank.
-3. Click **Load data** or **Load BTC/USDT archive**. The browser loads the bundled **March 2026 BTC/USDT 15-minute archive** from this repository, requiring no third-party market API.
-4. Click **Play** or step forward candle by candle. Use simulated Buy/Short and Close to record trades.
-5. To attempt fresh exchange candles, click **Latest candles**. Exchange APIs are publicly available but may be blocked by region, browser, CORS, or rate limits.
-6. You can select other crypto pairs/timeframes or a historical start date and click **Load data** to try real exchange sources. To import stocks, choose **Import CSV** with UTC OHLCV columns.
+Editable files are in `src/`. No dependencies or installation are required. Use Node 20 or newer.
 
-## March 2026 archive
+```sh
+cd src
+node build.cjs
+node --test tests/*.test.cjs
+```
 
-- File: `data/btcusdt-15m-2026-03.csv`
-- 2,976 chronological UTC candles, from March 1 through March 31, 2026.
-- Schema: `time,open,high,low,close,volume`, where `time` is Unix seconds.
-- Source: [publicly shared Binance BTCUSDT March 2026 15m history](https://github.com/grayson8geraldo/triq/blob/main/BTCUSDT-15m-2026-03.csv); transformed by selecting numeric OHLCV and timestamp columns. The original data source should be verified before research or financial conclusions. It is **not** simulated price data.
-- Historical archive is **not live data**. The default view deliberately loads this archive to make first-run replay function without an exchange API. For recent data use **Latest candles**.
+The generated file is `src/dist/index.html`. Copy that file to `trading-simulator/index.html` to publish through this repository's existing GitHub Pages deployment. The page has no external JavaScript, stylesheet, font or chart-library dependency.
 
-## Data providers and limitations
+The source directory includes the original course data, lab code, trading engine, market adapters, chart, application UI, template and test suites. Keep edits in source files and regenerate the published HTML.
 
-Live online crypto retrieval tries Coinbase Exchange, Kraken and two Binance public market-data endpoints. Only successfully retrieved OHLCV data is displayed. Different markets and exchanges can have different prices or volumes; products and timeframes are not silently substituted. Kraken returns at most about 720 recent OHLC records; Coinbase's endpoint has its own supported granularities and historical request limits. Not every interval works for every provider.
+## Data behavior
 
-Other equities, ETFs and futures **do not** have integrated historical feeds. For those markets, import a CSV with `time,open,high,low,close,volume` or `date,open,high,low,close,volume`. Use UTC ISO 8601 timestamps or Unix seconds for accurate replay.
+The bundled BTCUSDT 15-minute archive covers March 2026 and contains 2,976 bars. Its original source is the publicly shared CSV at:
 
-## Features
+https://github.com/grayson8geraldo/triq/blob/main/BTCUSDT-15m-2026-03.csv
 
-- Step-by-step candlestick replay with playback speed, slider, replay restart, zoom and pan.
-- EMA 9/21 and horizontal drawing levels.
-- Local long/short simulated market orders, P&L calculations and trade history export.
-- Paper account starts at $100,000; default assumed fee is 0.04% and adverse slippage 0.02% per fill.
-- No actual broker orders, no leverage above 1× modeled notional, no limit or stop orders, and no realistic order-book fills.
-- Local browser session storage; it might be cleared by browser settings.
+This is a third-party historical archive, not an independently authenticated research-grade feed. All bars are validated for finite prices, positive prices, OHLC consistency, volume, ordering and duplicate timestamps. The default replay uses the embedded copy even when public endpoints are unavailable.
 
-## Troubleshooting
+Optional public requests race Coinbase Exchange and Kraken with 6.5-second timeouts. Exact market/quote pairs are preserved, incomplete candles are filtered, and a successful provider cancels the competing request. Fetching more candles remains on the same venue. Kraken cannot return arbitrarily old OHLC data; unavailable requests leave the existing replay and account intact.
 
-- If you still see the initial overlay over the chart, hard-reload the GitHub Pages tab (Ctrl+Shift+R on Windows or Cmd+Shift+R on Mac) to pick up the CSS fix.
-- The first **Load data** click with the default symbol/timeframe should load the bundled archive immediately.
-- **Latest candles** depends on external APIs; if all sources fail, the site reports the error and the historical archive can still be replayed.
-- All paths are relative to this `trading-simulator/` directory so hosting from the GitHub Pages subpath works.
+- Coinbase: https://docs.cdp.coinbase.com/api-reference/exchange-api/rest-api/products/get-product-candles
+- Kraken: https://docs.kraken.com/api-reference/market-data/get-ohlc-data
 
-**Disclaimer:** Educational practice only, not investment advice. Real historical data can have gaps and errors; modeled execution is not an actual fill.
+CSV import accepts comma/semicolon-delimited OHLC data with header aliases, quoted fields, optional volume, Unix seconds/milliseconds and ISO dates. Timezone-free ISO values are interpreted as UTC. Import requires 10–50,000 unique candles and files smaller than 10 MB. Invalid rows produce explicit errors; they are not silently discarded.
+
+## Simulation conventions
+
+- Starting paper balance: $100,000. One open position. Maximum entry notional plus entry fee is limited to available equity (1×).
+- Each fill has 0.04% fee and 0.02% adverse slippage. Entry uses the currently revealed candle close.
+- Stops and targets activate on later candles. A gap through the stop uses the opening price. If a candle touches both levels and the opening price has not already resolved the exit, the stop is chosen first.
+- A target is a trigger-based take-profit exit with adverse slippage, not a guaranteed limit-price fill. Favorable target gaps receive no modeled price improvement.
+- Equity includes open price P&L; estimated future exit fees are not deducted until exit. “Realized balance” is a paper-account ledger, not spendable cash after buying the asset.
+- Trade timestamps identify the candle's opening time, while a manual entry or exit executes at that candle's close.
+- USD and USDT are treated as equal paper units. No order-book queue, liquidity, borrowing, funding, taxes, futures multipliers or FX conversion is modeled. Short selling is simulated.
+- Rewinding, changing data or starting a new session closes any open position at the current replay close, archives the session and resets the account. The journal can display current or archived sessions; statistics and the equity curve use the current session.
+- The browser retains up to 50 archived sessions. JSON backups include the active data, journal and learning progress. Restore validates the schema and reconstructs derived trade results instead of trusting saved P&L.
+
+## Learning and resources
+
+Lessons are original educational text with links to primary reading sources. Video cards link to actual official provider pages and include a reason to watch plus a practice task. Resources were checked November 21, 2026; external playback can depend on provider availability, cookies or sign-in. Videos are not embedded or autoplayed.
+
+Course quizzes require 80% mastery (four of four for each four-question check); labs require at least four of five. Read lessons, quiz mastery, lab mastery and watched videos are tracked separately. Completion demonstrates these learning activities and is not professional certification or a promise of trading performance.
+
+## Validation for this release
+
+52 automated tests cover the trading engine, public market adapters, chart future-data isolation and resizing, content/reference integrity, executable self-contained output, replay transitions and persistence/backup reconstruction.
+
+Browser checks covered:
+
+- Immediate bundled replay and visible chart without the obsolete blocking overlay.
+- Risk-based long entry, saved open-position reload, stepping, manual exit, journal review and quiz-score reload.
+- A complete five-task candle lab with numeric and recognition questions and a saved 100% result.
+- All 12 video cards, topic search, and problem-to-course/lab/video links.
+- A 390px mobile viewport, including practice, course, coach and a data dialog, without page-level horizontal overflow.
+- A deliberately unavailable historical public-data request followed by successful replay advancement on the retained dataset.
+- A successful optional live request returning 700 completed BTC-USD candles from Kraken.
+
+External video playback was not tested. Public data availability remains subject to exchange, network and regional restrictions; the embedded archive and CSV import do not depend on those APIs.
