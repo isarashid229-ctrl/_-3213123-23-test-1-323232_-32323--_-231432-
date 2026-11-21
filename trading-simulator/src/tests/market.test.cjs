@@ -2,6 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const M = require('../market.js');
+const T = require('../time.js');
 const NOW = Date.parse('2026-11-21T12:05:00Z') / 1000;
 const INTERVAL = 900;
 const BOUNDARY = Math.floor(NOW / INTERVAL) * INTERVAL;
@@ -39,6 +40,8 @@ test('public data races providers, keeps exact quote currency, and uses the succ
     assert.equal(result.symbol, 'BTC-USDT');
     assert.equal(result.source, 'Kraken · BTC-USDT');
     assert.equal(result.mode, 'public');
+    assert.equal(result.assetClass, 'crypto');
+    assert.equal(result.volumeKind, 'units');
     assert.equal(result.candles.length, 12);
     assert.equal(calls.length, 2);
     assert.ok(calls.some(url => url.includes('/products/BTC-USDT/candles')));
@@ -114,7 +117,7 @@ test('Kraken refuses a historical date beyond its window instead of silently loa
 });
 
 test('historical Coinbase date is preserved and the request range never exceeds 298 intervals', async () => {
-  const from = Date.parse('2026-03-01T00:00:00Z') / 1000;
+  const from = T.parseLocal('2026-03-01', '00:00');
   await mocked(async url => {
     const parsed = new URL(url);
     const start = Date.parse(parsed.searchParams.get('start')) / 1000;
@@ -146,6 +149,21 @@ test('tail continuation stays on its venue, requests the next interval, and acce
     assert.equal(result.candles[0].time, after + INTERVAL);
     assert.equal(calls, 1);
   });
+});
+
+test('public start dates mean midnight in New York in both EST and EDT', async () => {
+  for (const [date, expectedISO] of [['2026-01-15', '2026-01-15T05:00:00.000Z'], ['2026-07-15', '2026-07-15T04:00:00.000Z']]) {
+    const from = Date.parse(expectedISO) / 1000;
+    await mocked(async url => {
+      assert.equal(new URL(url).searchParams.get('start'), expectedISO);
+      return response(Array.from({ length: 12 }, (_, i) => [from + i * INTERVAL, 98, 105, 100, 102, 10]));
+    }, async () => {
+      const result = await M.load({ symbol: 'BTC-USD', timeframe: '15m', startDate: date, providerId: 'coinbase' });
+      assert.equal(result.candles[0].time, from);
+      assert.equal(T.date(result.candles[0].time), date);
+      assert.equal(T.axis(result.candles[0].time), '00:00');
+    });
+  }
 });
 
 test('pinned venue failure never switches exchange and does not return duplicates', async () => {

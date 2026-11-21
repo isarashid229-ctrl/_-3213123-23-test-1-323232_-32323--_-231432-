@@ -1,1 +1,13 @@
-{"name":"replaylab-academy","version":"2.0.0","private":true,"description":"Self-contained historical replay and trading education workspace","scripts":{"build":"node build.cjs","test":"node build.cjs && node --test tests/*.test.cjs"},"engines":{"node":">=20"}}
+{
+  "name": "replaylab-academy",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Sharp historical market replay, New York time, stock practice and a 16-week trading education program",
+  "scripts": {
+    "build": "node build.cjs",
+    "test": "node build.cjs && node --test tests/*.test.cjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

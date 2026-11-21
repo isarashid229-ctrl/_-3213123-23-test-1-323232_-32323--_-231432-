@@ -6,10 +6,11 @@
  */
 (function (root, factory) {
   const engine = typeof module === 'object' && module.exports ? require('./engine.js') : root.ReplayEngine;
-  const api = factory(root, engine);
+  const time = typeof module === 'object' && module.exports ? require('./time.js') : root.ReplayTime;
+  const api = factory(root, engine, time);
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (root) root.ReplayMarket = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (root, Engine) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (root, Engine, Time) {
   'use strict';
 
   const TIMEOUT_MS = 6500;
@@ -38,8 +39,9 @@
     const hasAfter = options.afterTime !== undefined && options.afterTime !== null;
     if (hasDate && hasAfter) throw new Error('Use either a start date or continuation timestamp, not both.');
     if (hasDate) {
-      if (typeof options.startDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(options.startDate)) throw new Error('Start date must use YYYY-MM-DD (UTC).');
-      start = Engine.parseTime(options.startDate);
+      if (typeof options.startDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(options.startDate)) throw new Error('Start date must use YYYY-MM-DD (New York).');
+      if (!Time || typeof Time.parseLocal !== 'function') throw new Error('The New York time helper is unavailable. Reload the page.');
+      start = Time.parseLocal(options.startDate, '00:00');
       if (start > now) throw new Error('Choose a start date that is not in the future.');
     }
     if (hasAfter) {
@@ -88,7 +90,8 @@
       throw new Error('only ' + candles.length + ' completed candles were returned; at least 10 are needed. Choose an earlier date or another market');
     }
     return { candles: candles, source: LABELS[providerId] + ' · ' + config.symbol,
-      providerId: providerId, mode: 'public', symbol: config.symbol, timeframe: config.timeframe };
+      providerId: providerId, mode: 'public', symbol: config.symbol, timeframe: config.timeframe,
+      assetClass: 'crypto', volumeKind: 'units', timeZone: 'America/New_York' };
   }
 
   async function coinbase(config, controllers) {

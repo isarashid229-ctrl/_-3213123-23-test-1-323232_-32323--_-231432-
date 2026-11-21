@@ -6,11 +6,12 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const context = vm.createContext({ Math });
-for (const file of ['academy.js', 'labs.js']) {
+for (const file of ['academy.js', 'labs.js', 'training.js']) {
   vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
 }
 const academy = context.ReplayAcademy;
 const labs = context.ReplayLabs;
+const training = context.ReplayTraining;
 const nonempty = (value, label) => assert.ok(typeof value === 'string' && value.trim().length > 0, label);
 function ids(values, label) {
   const result = new Set();
@@ -66,7 +67,7 @@ test('every course, problem, lab and resource link resolves to existing content'
 test('quizzes are answerable, gradeable, and have explanatory feedback', () => {
   const prompts = new Set();
   for (const module of academy.modules) {
-    assert.ok(Array.isArray(module.quiz) && module.quiz.length >= 3, module.id + ': insufficient quiz');
+    assert.ok(Array.isArray(module.quiz) && module.quiz.length === 5, module.id + ': five questions permit an exact 80% threshold');
     for (const question of module.quiz) {
       nonempty(question.prompt, module.id + ': quiz prompt');
       assert.ok(!prompts.has(question.prompt), module.id + ': repeated quiz prompt');
@@ -79,6 +80,101 @@ test('quizzes are answerable, gradeable, and have explanatory feedback', () => {
       nonempty(question.explanation, question.prompt + ': no feedback');
     }
   }
+});
+
+test('expanded course preserves the original progress IDs and delivers the requested scope', () => {
+  assert.equal(academy.modules.length, 16);
+  assert.equal(academy.modules.flatMap(module => module.lessons).length, 48);
+  assert.equal(academy.modules.flatMap(module => module.quiz).length, 80);
+  const original = ['foundations', 'candles', 'structure', 'orders', 'sizing', 'setups', 'management', 'psychology', 'review', 'capstone'];
+  for (const id of original) {
+    const module = academy.modules.find(item => item.id === id);
+    assert.ok(module, 'original module progress key was removed: ' + id);
+    for (let n = 1; n <= 3; n++) assert.ok(module.lessons.some(item => item.id === id + '-' + n), 'original lesson progress key was removed');
+  }
+  for (const id of ['stocks', 'sessions', 'playbook', 'testing', 'execution_review', 'business']) {
+    assert.ok(academy.modules.some(item => item.id === id), 'advanced module missing: ' + id);
+  }
+});
+
+test('sixteen-week plan has complete sessions, deliverables, and working course/lab references', () => {
+  assert.equal(training.weeks.length, 16);
+  ids(training.weeks, 'weeks');
+  const moduleIds = new Set(academy.modules.map(item => item.id));
+  const labIds = new Set(labs.items.map(item => item.id));
+  const coveredModules = new Set();
+  const sessionKeys = new Set();
+  const tasks = new Set();
+  let totalMinutes = 0;
+  for (let index = 0; index < training.weeks.length; index++) {
+    const week = training.weeks[index];
+    assert.equal(week.id, 'week-' + (index + 1), 'stable sequential week ID');
+    assert.equal(week.week, index + 1);
+    nonempty(week.title, week.id + ': title');
+    nonempty(week.phase, week.id + ': phase');
+    nonempty(week.objective, week.id + ': objective');
+    nonempty(week.deliverable, week.id + ': deliverable');
+    assert.ok(Array.isArray(week.criteria) && week.criteria.length > 0, week.id + ': completion evidence');
+    week.criteria.forEach(value => nonempty(value, week.id + ': criterion'));
+    references(week.moduleIds, moduleIds, week.id + ': modules');
+    references(week.labIds, labIds, week.id + ': labs');
+    week.moduleIds.forEach(id => coveredModules.add(id));
+    assert.equal(week.days.length, 5, week.id + ': five focused sessions');
+    week.days.forEach((day, dayIndex) => {
+      assert.equal(day.day, dayIndex + 1, week.id + ': stable day number');
+      const key = week.id + ':' + day.day;
+      assert.ok(!sessionKeys.has(key), 'duplicate persisted session key: ' + key);
+      sessionKeys.add(key);
+      nonempty(day.title, key + ': title');
+      nonempty(day.task, key + ': assignment');
+      assert.ok(!tasks.has(day.task), key + ': repeated generic assignment');
+      tasks.add(day.task);
+      assert.ok(Number.isInteger(day.minutes) && day.minutes >= 30 && day.minutes <= 60, key + ': expected focused 30–60 minute session');
+      totalMinutes += day.minutes;
+    });
+  }
+  assert.equal(sessionKeys.size, 80);
+  for (const id of moduleIds) assert.ok(coveredModules.has(id), 'course module absent from training plan: ' + id);
+  assert.ok(totalMinutes >= 2400 && totalMinutes <= 4800, 'time estimate must match the 80 stated sessions');
+});
+
+test('diagnostic and capstone assessments have stable IDs and actionable, unambiguous skill feedback', () => {
+  assert.equal(training.exams.length, 2);
+  ids(training.exams, 'exams');
+  ids(training.exams.flatMap(exam => exam.questions), 'exam questions');
+  const moduleIds = new Set(academy.modules.map(item => item.id));
+  const expectedCounts = { diagnostic: 12, capstone: 20 };
+  for (const exam of training.exams) {
+    assert.ok(Object.hasOwn(expectedCounts, exam.id), 'unexpected persisted exam ID');
+    assert.equal(exam.questions.length, expectedCounts[exam.id]);
+    assert.equal(exam.passPercent, 80);
+    nonempty(exam.title, exam.id + ': title');
+    nonempty(exam.description, exam.id + ': description');
+    const skillModules = new Map();
+    const prompts = new Set();
+    for (const question of exam.questions) {
+      nonempty(question.prompt, question.id + ': prompt');
+      assert.ok(!prompts.has(question.prompt), question.id + ': repeated prompt');
+      prompts.add(question.prompt);
+      assert.equal(question.choices.length, 4, question.id + ': four choices');
+      question.choices.forEach(choice => nonempty(choice, question.id + ': choice'));
+      assert.equal(new Set(question.choices.map(choice => choice.trim().toLowerCase())).size, 4, question.id + ': duplicate choices');
+      assert.ok(Number.isInteger(question.answer) && question.answer >= 0 && question.answer < 4, question.id + ': valid answer');
+      nonempty(question.explanation, question.id + ': feedback');
+      nonempty(question.skill, question.id + ': skill feedback label');
+      assert.ok(moduleIds.has(question.moduleId), question.id + ': review topic is reachable');
+      if (skillModules.has(question.skill)) assert.equal(question.moduleId, skillModules.get(question.skill), 'a grouped skill must link to one consistent review module');
+      skillModules.set(question.skill, question.moduleId);
+    }
+  }
+  assert.equal(training.exams.find(exam => exam.id === 'capstone').questions.length * 0.8, 16);
+  ids(training.rubric, 'process rubric');
+  assert.equal(training.rubric.length, 8);
+  training.rubric.forEach(item => {
+    nonempty(item.title, item.id + ': title');
+    nonempty(item.description, item.id + ': criterion');
+    nonempty(item.target, item.id + ': observable target');
+  });
 });
 
 test('learning links are explicit HTTPS resources and videos include practice instructions', () => {

@@ -142,7 +142,7 @@
     const up = d.close >= d.open;
     const top = y(Math.max(d.open, d.close));
     const bottom = y(Math.min(d.open, d.close));
-    const color = up ? '#52d7bd' : '#f28b9b';
+    const color = up ? '#2962ff' : '#172033';
     const title = `Teaching candle: open ${d.open}, high ${d.high}, low ${d.low}, close ${d.close}.`;
     const labels = [
       ['High', d.high, 362, y(d.high)],
@@ -150,7 +150,7 @@
       ['Open', d.open, 100, y(d.open)],
       ['Close', d.close, 362, y(d.close)]
     ];
-    return `<svg class="lab-chart lab-candle-chart" viewBox="0 0 600 260" role="img" aria-labelledby="${instance}-chart-title"><title id="${instance}-chart-title">${escape(title)}</title><line x1="300" x2="300" y1="${y(d.high)}" y2="${y(d.low)}" stroke="${color}" stroke-width="3"/><rect x="268" y="${top}" width="64" height="${Math.max(bottom - top, 3)}" fill="${color}" rx="2"/>${labels.map(([label, value, x, yy]) => `<line x1="${x === 100 ? 204 : 338}" x2="${x === 100 ? 260 : 356}" y1="${yy}" y2="${yy}" stroke="#526a83" stroke-dasharray="3 4"/><text x="${x}" y="${yy + 5}" fill="#dceafb" font-size="15" font-weight="600">${label} ${escape(money(value))}</text>`).join('')}</svg>`;
+    return `<svg class="lab-chart lab-candle-chart" viewBox="0 0 600 260" role="img" aria-labelledby="${instance}-chart-title"><title id="${instance}-chart-title">${escape(title)}</title><line x1="300" x2="300" y1="${y(d.high)}" y2="${y(d.low)}" stroke="${color}" stroke-width="3"/><rect x="268" y="${top}" width="64" height="${Math.max(bottom - top, 3)}" fill="${color}" rx="2"/>${labels.map(([label, value, x, yy]) => `<line x1="${x === 100 ? 204 : 338}" x2="${x === 100 ? 260 : 356}" y1="${yy}" y2="${yy}" stroke="#aab9cb" stroke-dasharray="3 4"/><text x="${x}" y="${yy + 5}" fill="#263349" font-size="15" font-weight="600">${label} ${escape(money(value))}</text>`).join('')}</svg>`;
   }
 
   function swingSvg(d, instance, selectable) {
@@ -161,7 +161,7 @@
     const path = d.points.map((p, i) => `${i ? 'L' : 'M'} ${x(i)} ${y(p)}`).join(' ');
     const grid = Array.from({ length: 5 }, (_, i) => min + (max - min) * i / 4);
     const title = 'Synthetic swing prices in sequence: ' + d.points.join(', ') + '.';
-    return `<svg class="lab-chart ${selectable ? 'lab-select-chart' : ''}" data-lab-chart="${selectable ? 'selectable' : 'static'}" viewBox="0 0 600 260" role="img" aria-labelledby="${instance}-chart-title"><title id="${instance}-chart-title">${escape(title)}</title>${grid.map(p => `<line x1="45" x2="548" y1="${y(p)}" y2="${y(p)}" stroke="#24374c"/><text x="558" y="${y(p) + 4}" fill="#a3b3c6" font-size="12">${Number(p.toFixed(1))}</text>`).join('')}${d.reference != null ? `<line x1="45" x2="548" y1="${y(d.reference)}" y2="${y(d.reference)}" stroke="#e3b56d" stroke-dasharray="6 5"/><text x="52" y="${y(d.reference) - 9}" fill="#e3b56d" font-size="12">${escape(d.referenceLabel || 'Reference')}</text>` : ''}<path d="${path}" fill="none" stroke="#69b5fb" stroke-width="3" stroke-linejoin="round"/>${d.points.map((p, i) => `<circle cx="${x(i)}" cy="${y(p)}" r="4" fill="#9cd0ff"/><text x="${x(i)}" y="${y(p) + (i % 2 === 0 ? 19 : -12)}" text-anchor="middle" fill="#e0edfa" font-size="12">${p}</text>`).join('')}<text x="50" y="250" fill="#a3b3c6" font-size="12">Earlier</text><text x="540" y="250" text-anchor="end" fill="#a3b3c6" font-size="12">Later</text>${selectable ? '<line data-lab-marker x1="45" x2="548" y1="124" y2="124" stroke="#52d7bd" stroke-width="2" stroke-dasharray="8 5"/><text data-lab-marker-label x="50" y="116" fill="#78e6d0" font-size="13" font-weight="700"></text>' : ''}</svg>`;
+    return `<svg class="lab-chart ${selectable ? 'lab-select-chart' : ''}" data-lab-chart="${selectable ? 'selectable' : 'static'}" viewBox="0 0 600 260" role="img" aria-labelledby="${instance}-chart-title"><title id="${instance}-chart-title">${escape(title)}</title>${grid.map(p => `<line x1="45" x2="548" y1="${y(p)}" y2="${y(p)}" stroke="#e6ecf3"/><text x="558" y="${y(p) + 4}" fill="#52627a" font-size="12">${Number(p.toFixed(1))}</text>`).join('')}${d.reference != null ? `<line x1="45" x2="548" y1="${y(d.reference)}" y2="${y(d.reference)}" stroke="#996710" stroke-dasharray="6 5"/><text x="52" y="${y(d.reference) - 9}" fill="#996710" font-size="12">${escape(d.referenceLabel || 'Reference')}</text>` : ''}<path d="${path}" fill="none" stroke="#2962ff" stroke-width="3" stroke-linejoin="round"/>${d.points.map((p, i) => `<circle cx="${x(i)}" cy="${y(p)}" r="4" fill="#2962ff"/><text x="${x(i)}" y="${y(p) + (i % 2 === 0 ? 19 : -12)}" text-anchor="middle" fill="#263349" font-size="12">${p}</text>`).join('')}<text x="50" y="250" fill="#52627a" font-size="12">Earlier</text><text x="540" y="250" text-anchor="end" fill="#52627a" font-size="12">Later</text>${selectable ? '<line data-lab-marker x1="45" x2="548" y1="124" y2="124" stroke="#2962ff" stroke-width="2" stroke-dasharray="8 5"/><text data-lab-marker-label x="50" y="116" fill="#2962ff" font-size="13" font-weight="700"></text>' : ''}</svg>`;
   }
 
   function render(id, container, onComplete) {

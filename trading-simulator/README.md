@@ -1,76 +1,81 @@
-# ReplayLab Academy 2.0
+# ReplayLab Studio 3
 
-A self-contained learning and paper-trading workspace. The published `index.html` embeds its styles, scripts, course, labs and 2,976-bar historical dataset. It starts without an exchange API or a separate CSV fetch.
+A self-contained historical replay and paper-trading workspace with a structured learning program. The published application is `trading-simulator/index.html`; editable source and regression tests live in `trading-simulator/src/`.
 
-## What's included
+## Run and build
 
-- Historical candle replay with no future bars drawn, EMA 9/21, zoom, pan, price levels, play/pause, stepping, timeline navigation and random starting points.
-- Long/short paper trades, cost-aware position sizing, fixed stop/target exits, gap and intrabar ambiguity handling, realized balance and marked equity.
-- Ten course modules, 30 original lessons, 40 quiz questions with explanations and saved best scores.
-- Eight interactive labs, each with five tasks: candles, structure, levels, sizing, orders, risk/reward, expectancy and discipline. Synthetic teaching charts are explicitly labeled.
-- Eight problem-specific learning paths linked to lessons, labs and 12 official video resources from Schwab, Fidelity and CME Group.
-- A journal with trade plans, self-reviews, mistake tags, net results, average R, expectancy, win rate and closed-trade drawdown.
-- Browser-local persistence, progress backup/restore, journal CSV export, CSV import and a searchable glossary.
-
-## Build and test
-
-Editable files are in `src/`. No dependencies or installation are required. Use Node 20 or newer.
+Node.js 20 or newer is sufficient. No package installation, build service, API key, external chart library or font download is required.
 
 ```sh
-cd src
-node build.cjs
-node --test tests/*.test.cjs
+cd trading-simulator/src
+npm test
+npm run build
 ```
 
-The generated file is `src/dist/index.html`. Copy that file to `trading-simulator/index.html` to publish through this repository's existing GitHub Pages deployment. The page has no external JavaScript, stylesheet, font or chart-library dependency.
+The build creates `dist/index.html`. Publish that file as `trading-simulator/index.html`. On the managed preview environment, `.openai/hosting.json` points the preview to `dist`.
 
-The source directory includes the original course data, lab code, trading engine, market adapters, chart, application UI, template and test suites. Keep edits in source files and regenerate the published HTML.
+## Studio workspace
 
-## Data behavior
+- SVG price charts remain sharp across screen densities, browser zoom and resizing. The default chart has a white surface, blue rising candles and near-black falling candles.
+- User preferences include candle colors, light/dark chart appearance, candlesticks/OHLC bars/close line, volume, grid, EMA 9/21, New York core-hours reference shading and eligible NY-day VWAP.
+- Pan and zoom, mark price levels, expand the chart, play or step through replay, and inspect only revealed candles. `Space` plays/pauses and `N` advances a candle when not editing a field. Focus the chart for keyboard zoom/pan; `End` returns to the latest revealed bar.
+- All human-facing intraday timestamps use `America/New_York`, with automatic EST/EDT handling. Daily studies show session dates. Numeric timestamps remain Unix seconds for arithmetic and persistence.
+- Searchable stock/ETF catalog, filters, favorites, bundled Bitcoin history, optional public crypto candles, and OHLCV CSV import.
 
-The bundled BTCUSDT 15-minute archive covers March 2026 and contains 2,976 bars. Its original source is the publicly shared CSV at:
+## Market samples
 
-https://github.com/grayson8geraldo/triq/blob/main/BTCUSDT-15m-2026-03.csv
+| Symbols | Timeframe | Historical coverage | Interpretation |
+|---|---|---|---|
+| AAPL, MSFT, NVDA, TSLA, AMD, AMZN, META, GOOG | 3 minutes | July 22–24, 2026; 320 bars each, first session partial | Vendor-published chart samples; tick counts, not share volume |
+| SPY | Daily | September 1, 2020–January 12, 2021; 92 bars | Daily structure/gap study |
+| QQQ, TSM | Daily | January 2–December 31, 2025; 250 bars each | Daily structure/gap study |
+| IWM | Daily | January 3–June 30, 2022; 124 bars | Daily structure/gap study |
+| BTC/USDT | 15 minutes | March 2026; 2,976 bars | Bundled third-party historical archive |
 
-This is a third-party historical archive, not an independently authenticated research-grade feed. All bars are validated for finite prices, positive prices, OHLC consistency, volume, ordering and duplicate timestamps. The default replay uses the embedded copy even when public endpoints are unavailable.
+These are attributed third-party learning samples, not independently verified research-grade feeds, live quotes or a comprehensive market-data service. `instruments.js` includes source URLs, retrieval provenance, dataset digests, volume definitions, adjustment limitations and applicable license notices. Sources and license notices are accessible in the in-app field guide.
 
-Optional public requests race Coinbase Exchange and Kraken with 6.5-second timeouts. Exact market/quote pairs are preserved, incomplete candles are filtered, and a successful provider cancels the competing request. Fetching more candles remains on the same venue. Kraken cannot return arbitrarily old OHLC data; unavailable requests leave the existing replay and account intact.
+VWAP is computed from revealed bars within the loaded New York day only. It is unavailable for daily studies, tick-count samples, or absent volume. Core-hours shading is a weekday 09:30–16:00 New York reference; holidays and early closes are not modeled. Daily timestamps use 16:00 New York to preserve the source date; that convention is not an observed intraday price timestamp or closing-auction guarantee.
 
-- Coinbase: https://docs.cdp.coinbase.com/api-reference/exchange-api/rest-api/products/get-product-candles
-- Kraken: https://docs.kraken.com/api-reference/market-data/get-ohlc-data
+Public crypto requests use Coinbase Exchange and Kraken with exact pair matching, finite timeouts, provider fallbacks, exclusion of unfinished candles and source-pinned continuation. Region or browser restrictions can still prevent public access; the bundled workspace remains usable when they do.
 
-CSV import accepts comma/semicolon-delimited OHLC data with header aliases, quoted fields, optional volume, Unix seconds/milliseconds and ISO dates. Timezone-free ISO values are interpreted as UTC. Import requires 10–50,000 unique candles and files smaller than 10 MB. Invalid rows produce explicit errors; they are not silently discarded.
+CSV requires time/open/high/low/close; volume is optional. Unix seconds, milliseconds and ISO timestamps are accepted. Date-only imported values are mapped to their supplied date at 16:00 New York; naive intraday ISO timestamps are interpreted as UTC. Explicit offsets are recommended. The importer rejects inconsistent OHLC, conflicting duplicates and invalid numbers. Prices are paper-dollar units; futures multipliers, FX pip conversion and derivative options are not modeled.
 
-## Simulation conventions
+## Paper account model
 
-- Starting paper balance: $100,000. One open position. Maximum entry notional plus entry fee is limited to available equity (1×).
-- Each fill has 0.04% fee and 0.02% adverse slippage. Entry uses the currently revealed candle close.
-- Stops and targets activate on later candles. A gap through the stop uses the opening price. If a candle touches both levels and the opening price has not already resolved the exit, the stop is chosen first.
-- A target is a trigger-based take-profit exit with adverse slippage, not a guaranteed limit-price fill. Favorable target gaps receive no modeled price improvement.
-- Equity includes open price P&L; estimated future exit fees are not deducted until exit. “Realized balance” is a paper-account ledger, not spendable cash after buying the asset.
-- Trade timestamps identify the candle's opening time, while a manual entry or exit executes at that candle's close.
-- USD and USDT are treated as equal paper units. No order-book queue, liquidity, borrowing, funding, taxes, futures multipliers or FX conversion is modeled. Short selling is simulated.
-- Rewinding, changing data or starting a new session closes any open position at the current replay close, archives the session and resets the account. The journal can display current or archived sessions; statistics and the equity curve use the current session.
-- The browser retains up to 50 archived sessions. JSON backups include the active data, journal and learning progress. Restore validates the schema and reconstructs derived trade results instead of trusting saved P&L.
+Every session starts at $100,000. One long or short position is allowed, capped at 1× equity. Entry and exits incur 0.04% fees and 0.02% adverse slippage per fill. A market entry uses the currently revealed bar's close. Protective exits begin on the next bar. Stops take priority when both stop and target are touched within an ambiguous bar, unless the opening gap resolves the exit first. Gaps can exceed the planned loss. Targets are modeled as trigger-based exits, not guaranteed limit fills.
 
-## Learning and resources
+Sizing includes modeled fees and slippage. Automatic sizing rounds stock positions down to whole shares where at least one share fits; the paper model also accepts fractional quantities. Short selling is simulated without borrow availability, borrow fees, funding, tax, margin or order-book liquidity models. USD and USDT are treated as equal paper units. Equity includes gross open P&L and already-paid entry fees; exit fees are realized at close.
 
-Lessons are original educational text with links to primary reading sources. Video cards link to actual official provider pages and include a reason to watch plus a practice task. Resources were checked November 21, 2026; external playback can depend on provider availability, cookies or sign-in. Videos are not embedded or autoplayed.
+Changing datasets or rewinding creates a fresh account and archives existing trades. The journal can show current or archived sessions, with plan-adherence reviews, costs, net results, R multiples, expectancy and closed-trade drawdown. Journal summary metrics describe the current session. At most 50 archived sessions are retained. Trade CSV displays New York times or daily session dates.
 
-Course quizzes require 80% mastery (four of four for each four-question check); labs require at least four of five. Read lessons, quiz mastery, lab mastery and watched videos are tracked separately. Completion demonstrates these learning activities and is not professional certification or a promise of trading performance.
+## Learning program
 
-## Validation for this release
+- 16 modules, 48 original lessons and 80 module questions.
+- 8 scored interactive skill labs with 40 tasks per complete pass and fresh rounds on retry.
+- 16 weeks, 80 distinct 30–60-minute study/practice assignments, weekly deliverables and saved evidence notes. Estimated assigned study time is about 59 hours; additional repetition is expected.
+- A 12-question starting diagnostic and 20-question capstone, explanations, skill-level feedback and linked remediation lessons.
+- 8 process-readiness rubric categories, explicitly self-assessed.
+- Problem-specific practice paths, 14 official video resources with application tasks, 34 primary reading sources and a 48-term glossary.
 
-52 automated tests cover the trading engine, public market adapters, chart future-data isolation and resizing, content/reference integrity, executable self-contained output, replay transitions and persistence/backup reconstruction.
+The course develops knowledge, documented practice and professional habits. Completion does not certify professional status, provide a license, or promise employment or profitability. The sixteen-week schedule is a study structure, not a guaranteed deadline for using real money. Lab charts are synthetic teaching examples; bundled market prices are attributed historical samples.
 
-Browser checks covered:
+## Persistence and privacy
 
-- Immediate bundled replay and visible chart without the obsolete blocking overlay.
-- Risk-based long entry, saved open-position reload, stepping, manual exit, journal review and quiz-score reload.
-- A complete five-task candle lab with numeric and recognition questions and a saved 100% result.
-- All 12 video cards, topic search, and problem-to-course/lab/video links.
-- A 390px mobile viewport, including practice, course, coach and a data dialog, without page-level horizontal overflow.
-- A deliberately unavailable historical public-data request followed by successful replay advancement on the retained dataset.
-- A successful optional live request returning 700 completed BTC-USD candles from Kraken.
+The site has no account service, server-side personal-data storage, trading connection or analytics. Session data, course scores, lab results, training notes and preferences save in this browser under the existing v2-compatible storage key. The export/restore format preserves older Academy backups. Export progress before switching devices or clearing browser storage. External educational links open their publishers' sites; playback and site availability can change.
 
-External video playback was not tested. Public data availability remains subject to exchange, network and regional restrictions; the embedded archive and CSV import do not depend on those APIs.
+## Source files
+
+- `engine.js`: candle validation, CSV parser, paper accounting and trade metrics.
+- `time.js`: New York display, DST-aware local date parsing and session reference.
+- `market.js`: public crypto adapters, request bounds and provider consistency.
+- `instruments.js`: bundled stock/ETF samples and provenance.
+- `chart.js`: vector renderer, annotations, indicators, keyboard and pointer input.
+- `academy.js`, `training.js`, `labs.js`: original curriculum, assignments, assessments and graded exercises.
+- `studio.js`: market browser, chart settings, training UI and progress validation.
+- `app.js`: simulation orchestration, course/coach/journal routes and persistence.
+- `index.template.html`, `styles.css`, `studio.css`, `labs.css`: application shell and responsive styling.
+- `build.cjs`: self-contained HTML assembly; `tests/`: meaningful regression coverage.
+
+## Validation
+
+The Studio 3 release passes 91 automated tests spanning accounting, chronology/no-lookahead, source selection and continuation, SVG rendering, DST, daily date preservation, CSV errors and tiny prices, backup reconstruction, asynchronous restore protection, stock sizing, settings, training, assessments and content integrity. Browser checks cover desktop and mobile rendering, chart modes, stock and ETF selection, search, weekly note persistence, diagnostic submission and responsive overflow. See `QA.md` for the checked scope and limits.

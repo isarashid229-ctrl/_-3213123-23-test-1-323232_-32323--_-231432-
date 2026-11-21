@@ -136,7 +136,7 @@
     return rows;
   }
 
-  function parseCSV(input) {
+  function parseCSV(input, options = {}) {
     if (typeof input !== 'string' || !input.trim()) throw new Error('The CSV file is empty.');
     const text = input.replace(/^\uFEFF/, '');
     let firstLine = text.split(/\r?\n/, 1)[0], inQuote = false, commas = 0, semicolons = 0;
@@ -165,6 +165,7 @@
       if (row.cells.length !== headers.length) throw new Error('CSV row ' + row.line + ': expected ' + headers.length + ' fields but found ' + row.cells.length + '.');
       const data = {};
       for (const field of Object.keys(columns)) data[field] = columns[field] < 0 ? 0 : row.cells[columns[field]];
+      if (typeof options.dateOnlyToTime === 'function' && /^\d{4}-\d{2}-\d{2}$/.test(data.time)) data.time = options.dateOnlyToTime(data.time);
       return candleValue(data, 'CSV row ' + row.line);
     });
     return normalizeCandles(candles);
