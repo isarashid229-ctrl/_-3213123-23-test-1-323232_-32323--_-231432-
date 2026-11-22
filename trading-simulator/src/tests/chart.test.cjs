@@ -44,19 +44,28 @@ function harness(overrides = {}) {
   };
   sandbox.window = sandbox;
   vm.runInNewContext(chartSource, sandbox, { filename: 'chart.js' });
-  const chart = sandbox.ReplayChart.create(element, tooltip, { getData: () => data, onLevel: value => levels.push(value) });
+  const chart = sandbox.ReplayChart.create(element, tooltip, { getData: () => data, onLevel: value => levels.push(value), ...overrides.callbacks });
   function flush() { const queue = Array.from(frames.values()); frames.clear(); queue.forEach(callback => callback()); }
   function draw() { chart.draw(); flush(); return html; }
   function event(name, properties = {}) {
     const e = Object.assign({ clientX: bounds.left + 400, clientY: bounds.top + 200, pointerId: 1, pointerType: 'mouse', button: 0, preventDefault() { this.prevented = true; } }, properties);
     listeners.get(name)?.(e); flush(); return e;
   }
-  return { chart, element, tooltip, attributes, levels, listeners, observers, frames, bounds, css, draw, flush, event,
+  return { chart, element, tooltip, attributes, levels, listeners, observers, frames, bounds, css, sandbox, draw, flush, event,
     markup: () => html, writes: () => writes, setData(value) { data = value; }, getData: () => data };
 }
 function bodies(h) { return [...h.markup().matchAll(/data-series="candle"/g)].length; }
 function selected(h) { return Number(/data-selected-index="(\d+)"/.exec(h.markup())?.[1]); }
 function through(h) { return Number(/data-through-index="(\d+)"/.exec(h.markup())?.[1]); }
+function plot(h) {
+  const match = /<clipPath id="[^\"]+-price"><rect x="([^\"]+)" y="([^\"]+)" width="([^\"]+)" height="([^\"]+)"/.exec(h.markup());
+  return { x: Number(match[1]), y: Number(match[2]), width: Number(match[3]), height: Number(match[4]) };
+}
+function click(h, x, y) {
+  h.event('pointerdown', { clientX: h.bounds.left + x, clientY: h.bounds.top + y });
+  h.event('pointerup', { clientX: h.bounds.left + x, clientY: h.bounds.top + y });
+}
+function normalized(value) { return JSON.parse(JSON.stringify(value)); }
 function finiteMarkup(html) {
   assert.doesNotMatch(html, /(?:NaN|Infinity|undefined)/);
   for (const match of html.matchAll(/\b(?:x|y|width|height|x1|x2|y1|y2|cx|cy)="(-?\d[^\"]*)"/g)) assert.ok(Number.isFinite(parseFloat(match[1])), match[0]);
@@ -242,4 +251,283 @@ test('empty, collapsed and destroyed charts hide stale tooltip state and clean u
   h.chart.draw(); assert.equal(h.frames.size, 1); h.chart.destroy();
   assert.equal(h.frames.size, 0); assert.equal(h.listeners.size, 0); assert.equal(h.observers[0].disconnected, true);
   h.chart.draw(); assert.equal(h.frames.size, 0);
+});
+
+test('horizontal and two-point trendline tools emit completed host-owned drawings at revealed bar times', () => {
+  const drafts = [];
+  const h = harness({ callbacks: { onDrawing: drawing => drafts.push(normalized(drawing)) } });
+  h.draw();
+  h.chart.setTool('horizontal'); h.flush();
+  click(h, 250, 190);
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0].type, 'horizontal');
+  assert.ok(drafts[0].price > 0);
+  assert.equal(h.levels.length, 0, 'the modern and legacy callbacks must not both fire');
+  assert.equal(h.attributes['data-chart-tool'], 'horizontal');
+
+  h.chart.setTool('trendline'); h.flush();
+  click(h, 240, 210);
+  assert.equal(drafts.length, 1, 'a first endpoint must not be persisted as a completed line');
+  assert.match(h.markup(), /Choose a second bar/);
+  h.event('pointermove', { clientX: h.bounds.left + 580, clientY: h.bounds.top + 150 });
+  assert.match(h.markup(), /data-drawing-preview="trendline"/);
+  click(h, 580, 150);
+  assert.equal(drafts.length, 2);
+  const line = drafts[1];
+  assert.equal(line.type, 'trendline');
+  assert.ok(line.from.time < line.to.time);
+  assert.ok(line.from.price < line.to.price);
+  for (const endpoint of [line.from, line.to]) {
+    assert.ok(h.getData().candles.slice(0, 150).some(bar => bar.time === endpoint.time));
+    assert.ok(endpoint.time <= h.getData().candles[149].time);
+  }
+  assert.doesNotMatch(h.markup(), /data-drawing-preview=/);
+  assert.deepEqual(h.getData().drawings, undefined, 'the chart must not mutate host data');
+
+  click(h, 300, 180); click(h, 300, 200);
+  assert.equal(drafts.length, 2, 'a trendline requires distinct bar times');
+  assert.equal(h.chart.cancelDrawing(), true); h.flush();
+  assert.equal(h.chart.cancelDrawing(), false); h.flush();
+  assert.doesNotMatch(h.markup(), /data-drawing-preview=/);
+  h.event('pointerdown'); h.event('pointercancel'); h.event('pointerup');
+  assert.equal(drafts.length, 2, 'cancelled gestures cannot place points');
+});
+
+test('drawing keyboard controls place endpoints, select and delete without trapping ordinary browser keys', () => {
+  const drafts = [], selections = [], deleted = [];
+  const h = harness({ callbacks: {
+    onDrawing: drawing => drafts.push(normalized(drawing)),
+    onDrawingSelect: value => selections.push(value),
+    onDeleteDrawing: value => { deleted.push(value); h.getData().drawings = h.getData().drawings.filter(item => item.id !== value); }
+  } });
+  h.draw(); h.chart.setTool('trendline'); h.flush();
+  h.event('keydown', { key: 'Enter' });
+  for (let i = 0; i < 4; i++) h.event('keydown', { key: 'ArrowLeft' });
+  h.event('keydown', { key: 'ArrowUp' }); h.event('keydown', { key: 'Enter' });
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0].from.time, h.getData().candles[149].time);
+  assert.equal(drafts[0].to.time, h.getData().candles[145].time);
+  assert.ok(drafts[0].to.price > drafts[0].from.price);
+
+  h.getData().drawings = [{ id: 'keyboard-line', ...drafts[0] }];
+  h.chart.setTool('cursor'); h.flush();
+  h.event('pointermove'); assert.doesNotMatch(h.markup(), /data-crosshair=/);
+  h.event('keydown', { key: 'd' });
+  assert.deepEqual(selections, ['keyboard-line']);
+  assert.match(h.markup(), /data-selected="true"/);
+  assert.match(h.markup(), /data-drawing-handle="true"/);
+  const deletion = h.event('keydown', { key: 'Delete' });
+  assert.equal(deletion.prevented, true);
+  assert.deepEqual(deleted, ['keyboard-line']);
+  assert.deepEqual(selections, ['keyboard-line', null]);
+  assert.doesNotMatch(h.markup(), /data-drawing-id="keyboard-line"/);
+  assert.equal(h.chart.deleteSelected(), false);
+  assert.equal(h.event('keydown', { key: 'Tab' }).prevented, undefined);
+  assert.equal(h.event('keydown', { key: '+', ctrlKey: true }).prevented, undefined);
+
+  h.chart.setTool('trendline'); h.flush(); h.event('keydown', { key: 'Enter' });
+  h.event('keydown', { key: 'Escape' });
+  assert.doesNotMatch(h.markup(), /data-drawing-preview=/);
+  h.chart.setTool('invalid-tool'); h.flush();
+  assert.equal(h.attributes['data-chart-tool'], 'trendline');
+});
+
+test('drawings support pointer selection, escape labels, and discard selection when the host removes them', () => {
+  const selections = [];
+  const h = harness({ callbacks: { onDrawingSelect: value => selections.push(value) } });
+  const drawingId = 'level"/><script>bad()</script>';
+  h.getData().drawings = [{ id: drawingId, type: 'horizontal', price: 125, color: '#2345ab' }];
+  h.draw();
+  assert.doesNotMatch(h.markup(), /<script>/);
+  assert.match(h.markup(), /data-drawing-id="level&quot;/);
+  const p = plot(h), scale = h.chart.getScaleState();
+  const py = p.y + (scale.high - 125) / (scale.high - scale.low) * p.height;
+  click(h, 300, py);
+  assert.deepEqual(selections, [drawingId]);
+  assert.match(h.markup(), /data-selected="true"/);
+  h.getData().drawings = []; h.draw();
+  assert.deepEqual(selections, [drawingId, null]);
+  assert.equal(h.chart.deleteSelected(), false);
+});
+
+test('future drawing endpoints are neither read nor rendered and cannot change the viewport scale', () => {
+  const h = harness(); h.draw();
+  const baseline = normalized(h.chart.getScaleState());
+  const bars = h.getData().candles;
+  h.getData().drawings = [
+    { id: 'future-end', type: 'trendline', from: { time: bars[100].time, price: 120 }, to: { time: bars[200].time, get price() { throw new Error('future endpoint read'); } } },
+    { id: 'future-start', type: 'trendline', from: { time: bars[200].time, get price() { throw new Error('future endpoint read'); } }, to: { time: bars[100].time, price: 120 } }
+  ];
+  h.getData().candles = bars.map((bar, i) => i <= 149 ? bar : new Proxy(bar, { get() { throw new Error('future candle ' + i); } }));
+  assert.doesNotThrow(() => h.draw());
+  assert.doesNotMatch(h.markup(), /data-drawing-id="future/);
+  assert.deepEqual(normalized(h.chart.getScaleState()), baseline);
+});
+
+test('price-axis wheel and drag preserve a manual range while auto-fit tracks newly revealed prices', () => {
+  const changes = [];
+  const h = harness({ callbacks: { onScaleChange: value => changes.push(normalized(value)) } });
+  h.draw();
+  const initial = normalized(h.chart.getScaleState()), initialCount = bodies(h);
+  const axis = { clientX: h.bounds.left + h.bounds.width - 25, clientY: h.bounds.top + 190 };
+  h.event('wheel', { ...axis, deltaY: -120 });
+  const manual = normalized(h.chart.getScaleState());
+  assert.equal(manual.auto, false);
+  assert.ok(manual.high - manual.low < initial.high - initial.low);
+  assert.equal(bodies(h), initialCount, 'price-axis zoom must not change time zoom');
+  assert.deepEqual(changes, [{ auto: false }]);
+  h.getData().cursor = 150; h.getData().candles[150].high = 220;
+  h.draw();
+  assert.deepEqual(normalized(h.chart.getScaleState()), manual, 'new bars must not silently reset a manual price range');
+  h.chart.resetPriceScale(); h.flush();
+  assert.equal(h.chart.getScaleState().auto, true);
+  assert.ok(h.chart.getScaleState().high > 220);
+  assert.deepEqual(changes, [{ auto: false }, { auto: true }]);
+
+  const beforeDrag = normalized(h.chart.getScaleState());
+  h.event('pointerdown', axis);
+  h.event('pointermove', { ...axis, clientY: axis.clientY + 55 });
+  h.event('pointerup', { ...axis, clientY: axis.clientY + 55 });
+  const afterDrag = normalized(h.chart.getScaleState());
+  assert.equal(afterDrag.auto, false);
+  assert.ok(afterDrag.high - afterDrag.low > beforeDrag.high - beforeDrag.low);
+  const span = afterDrag.high - afterDrag.low;
+  h.event('pointerdown', { clientX: 420, clientY: 210 });
+  h.event('pointermove', { clientX: 420, clientY: 240 });
+  h.event('pointerup', { clientX: 420, clientY: 240 });
+  assert.ok(h.chart.getScaleState().low > afterDrag.low);
+  assert.ok(Math.abs(h.chart.getScaleState().high - h.chart.getScaleState().low - span) < 1e-8);
+  h.event('dblclick', axis);
+  assert.equal(h.chart.getScaleState().auto, true);
+  h.event('keydown', { key: '+', altKey: true });
+  assert.equal(h.chart.getScaleState().auto, false);
+  h.event('keydown', { key: '0' });
+  assert.equal(h.chart.getScaleState().auto, true);
+});
+
+test('manual price scales remain finite at tiny prices, extreme drag distances and chart resize', () => {
+  const h = harness({ data: { candles: candles(200, 1e-10), cursor: 149, settings: {}, drawings: [], levels: [] } });
+  h.draw();
+  h.chart.setAutoscale(false); h.flush();
+  const frozen = normalized(h.chart.getScaleState());
+  h.bounds.width = 450; h.bounds.height = 320; h.draw();
+  assert.deepEqual(normalized(h.chart.getScaleState()), frozen);
+  const axis = { clientX: h.bounds.left + h.bounds.width - 15, clientY: h.bounds.top + 150 };
+  h.event('pointerdown', axis);
+  h.event('pointermove', { ...axis, clientY: axis.clientY - 100000 });
+  h.event('pointerup', { ...axis, clientY: axis.clientY - 100000 });
+  finiteMarkup(h.markup());
+  assert.ok(h.chart.getScaleState().low >= 0);
+  assert.ok(h.chart.getScaleState().high > h.chart.getScaleState().low);
+  h.chart.reset(); h.flush();
+  assert.equal(h.chart.getScaleState().auto, true);
+});
+
+test('entry and exit markers reveal independently and never inspect future prices or affect scaling', () => {
+  const bars = candles(300), h = harness({ data: { candles: bars, cursor: 149, settings: {}, trades: [] } });
+  h.draw(); const baseline = normalized(h.chart.getScaleState());
+  let exitReads = 0;
+  h.getData().trades = [
+    { id: 'delayed', side: 'long', entryTime: bars[120].time, entryBarIndex: 120, entryPrice: bars[120].close,
+      exitTime: bars[160].time, exitBarIndex: 160, get exitPrice() { exitReads++; return bars[160].close; }, get netPnl() { throw new Error('result not needed by chart'); } },
+    { entryTime: bars[200].time, get entryPrice() { throw new Error('future entry price'); }, get exitTime() { throw new Error('future trade metadata'); }, get id() { throw new Error('future trade identifier'); } },
+    { id: 'earlier-entry', side: 'short', entryTime: bars[10].time, entryBarIndex: 10, get entryPrice() { throw new Error('offscreen entry should not be read'); }, exitTime: bars[130].time, exitBarIndex: 130, exitPrice: bars[130].close },
+    { id: 'bad-index', side: 'long', entryTime: bars[120].time, entryBarIndex: 200, get entryPrice() { throw new Error('unrevealed entry index'); }, exitTime: bars[130].time, exitBarIndex: 200, get exitPrice() { throw new Error('unrevealed exit index'); } }
+  ];
+  h.getData().position = { entryTime: bars[180].time, get entryPrice() { throw new Error('future open position'); } };
+  h.getData().candles = bars.map((bar, i) => i <= 149 ? bar : new Proxy(bar, { get() { throw new Error('future bar ' + i); } }));
+  assert.doesNotThrow(() => h.draw());
+  assert.equal(exitReads, 0);
+  assert.match(h.markup(), /data-trade-marker="entry" data-trade-id="delayed"/);
+  assert.doesNotMatch(h.markup(), /data-trade-marker="exit" data-trade-id="delayed"/);
+  assert.match(h.markup(), /data-trade-marker="exit" data-trade-id="earlier-entry"/);
+  assert.doesNotMatch(h.markup(), /data-trade-marker="entry" data-trade-id="earlier-entry"|data-trade-id="bad-index"/);
+  assert.deepEqual(normalized(h.chart.getScaleState()), baseline);
+  assert.match(h.markup(), /Long entry at 125\.00/);
+  assert.match(h.markup(), /New York<\/title>/);
+
+  h.getData().candles = bars; h.getData().cursor = 159; h.draw(); assert.equal(exitReads, 0);
+  h.getData().cursor = 160; h.draw();
+  assert.equal(exitReads, 1);
+  assert.match(h.markup(), /data-trade-marker="exit" data-trade-id="delayed"[^>]*data-event-index="160"/);
+  h.getData().position = { id: 'open', side: 'short', entryTime: bars[155].time, entryBarIndex: 155, entryPrice: bars[155].close, stop: 135, target: 125 };
+  h.draw();
+  assert.match(h.markup(), /data-trade-marker="entry" data-trade-id="open"/);
+  assert.match(h.markup(), /Short entry at/);
+});
+
+test('crosshair labels use New York and tool choice controls its visible behavior', () => {
+  const h = harness(); h.draw(); h.event('pointermove');
+  assert.match(h.markup(), /data-crosshair="time"/);
+  assert.match(h.markup(), />Mar \d+ \d\d:\d\d EST<\/text>/);
+  h.chart.setTool('cursor'); h.flush();
+  assert.doesNotMatch(h.markup(), /data-crosshair=/);
+  assert.match(h.attributes['aria-label'], /Active tool: cursor/);
+  h.chart.setTool('crosshair'); h.flush();
+  assert.match(h.markup(), /data-crosshair="vertical"/);
+  h.chart.setCrosshair(false); h.flush();
+  assert.doesNotMatch(h.markup(), /data-crosshair=/);
+});
+
+test('desktop OHLC uses one compact row while narrow charts wrap without covering the plot', () => {
+  const desktop = harness(), narrow = harness({ width: 400 });
+  desktop.draw(); narrow.draw();
+  function headerRows(h) {
+    return [...h.markup().matchAll(/<text x="[^\"]+" y="([^\"]+)" data-ohlc="(?:open|high|low|close)"/g)].map(match => Number(match[1]));
+  }
+  const desktopRows = headerRows(desktop), narrowRows = headerRows(narrow);
+  assert.equal(desktopRows.length, 4); assert.equal(new Set(desktopRows).size, 1);
+  assert.equal(narrowRows.length, 4); assert.equal(new Set(narrowRows).size, 2);
+  assert.ok(Math.max(...desktopRows) < plot(desktop).y);
+  assert.ok(Math.max(...narrowRows) < plot(narrow).y);
+  assert.ok(plot(desktop).height > desktop.bounds.height * 0.55);
+});
+
+test('multiple chart instances keep clip paths, drawing tools, scales and cleanup independent', () => {
+  const first = harness(), second = harness({ width: 500, height: 400 });
+  second.chart.destroy();
+  const chartTwo = first.sandbox.ReplayChart.create(second.element, second.tooltip, { getData: second.getData });
+  first.draw(); chartTwo.draw(); first.flush();
+  const firstClip = /<clipPath id="([^\"]+)-price"/.exec(first.markup())[1];
+  const secondClip = /<clipPath id="([^\"]+)-price"/.exec(second.markup())[1];
+  assert.notEqual(firstClip, secondClip);
+  first.chart.setTool('trendline'); first.flush();
+  first.event('keydown', { key: 'Enter' });
+  assert.match(first.markup(), /data-drawing-preview="trendline"/);
+  assert.doesNotMatch(second.markup(), /data-drawing-preview=/);
+  first.chart.setAutoscale(false); first.flush();
+  assert.equal(chartTwo.getScaleState().auto, true);
+  assert.equal(second.attributes['data-chart-tool'], 'crosshair');
+  first.chart.destroy();
+  const writes = second.writes(); chartTwo.draw(); first.flush();
+  assert.ok(second.writes() > writes);
+  assert.ok(second.listeners.size > 0);
+  chartTwo.destroy();
+  assert.equal(second.listeners.size, 0);
+  assert.ok(first.observers.every(observer => observer.disconnected));
+});
+
+test('a requested study candle is outlined only when its bar is revealed and visible', () => {
+  const h = harness(); h.getData().highlightIndex = 120; h.draw();
+  assert.match(h.markup(), /data-study-candle="120"/);
+  assert.match(h.markup(), /Study candle:/);
+  h.getData().highlightIndex = 200;
+  h.getData().candles[200] = new Proxy({}, { get() { throw new Error('unrevealed highlighted bar read'); } });
+  assert.doesNotThrow(() => h.draw());
+  assert.doesNotMatch(h.markup(), /data-study-candle=/);
+  h.getData().highlightIndex = 5; h.draw();
+  assert.doesNotMatch(h.markup(), /data-study-candle=/);
+});
+
+test('same-bar fills keep their markers and detail but cap visible labels, with readable price badges', () => {
+  const h = harness(), data = h.getData(), bar = data.candles[data.cursor];
+  data.trades = Array.from({ length: 15 }, (_, index) => ({ id: 'same-' + index, side: index % 2 ? 'short' : 'long', entryTime: bar.time, entryBarIndex: data.cursor, entryPrice: bar.close, exitTime: bar.time, exitBarIndex: data.cursor, exitPrice: bar.close }));
+  data.settings.bullColor = '#ffffff'; h.draw();
+  assert.equal([...h.markup().matchAll(/data-trade-marker="/g)].length, 30);
+  assert.equal([...h.markup().matchAll(/data-trade-label="true"/g)].length, 2);
+  assert.match(h.markup(), /data-last-price-text="true" fill="#172033"/);
+  data.settings.bullColor = '#172033'; h.draw();
+  assert.match(h.markup(), /data-last-price-text="true" fill="#ffffff"/);
+  data.settings.showTrades = false; h.draw();
+  assert.doesNotMatch(h.markup(), /data-trade-marker="|data-trade-label="/);
 });

@@ -6,12 +6,13 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const context = vm.createContext({ Math });
-for (const file of ['academy.js', 'labs.js', 'training.js']) {
+for (const file of ['academy.js', 'labs.js', 'training.js', 'guided.js']) {
   vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
 }
 const academy = context.ReplayAcademy;
 const labs = context.ReplayLabs;
 const training = context.ReplayTraining;
+const guided = context.ReplayGuided;
 const nonempty = (value, label) => assert.ok(typeof value === 'string' && value.trim().length > 0, label);
 function ids(values, label) {
   const result = new Set();
@@ -62,6 +63,33 @@ test('every course, problem, lab and resource link resolves to existing content'
     nonempty(problem.action, problem.id + ': missing next action');
   }
   for (const id of labIds) assert.ok(usedLabs.has(id), id + ': lab is unreachable from the learning content');
+});
+
+test('all lessons and problem-coach recommendations lead to concrete guided chart practice', () => {
+  const guidedIds = ids(guided.items, 'guided labs');
+  const seenFlows = new Set();
+  const reachedLabs = new Set();
+  for (const module of academy.modules) {
+    assert.ok(guidedIds.has(module.guidedLabId), module.id + ': guided default is reachable');
+    for (const lesson of module.lessons) {
+      for (const stage of ['seeIt', 'tryIt', 'reviewIt']) nonempty(lesson.practiceFlow[stage], lesson.id + ': ' + stage);
+      assert.ok(!seenFlows.has(lesson.practiceFlow.tryIt), lesson.id + ': generic repeated assignment');
+      seenFlows.add(lesson.practiceFlow.tryIt);
+      assert.ok(guidedIds.has(lesson.practice.guidedLabId), lesson.id + ': guided task is reachable');
+      reachedLabs.add(lesson.practice.guidedLabId);
+      nonempty(lesson.practice.title, lesson.id + ': practice title');
+      assert.equal(lesson.practice.task, lesson.practiceFlow.tryIt);
+      assert.equal(lesson.practice.successCriteria.length, 2, lesson.id + ': observable success criteria');
+      lesson.practice.successCriteria.forEach(item => nonempty(item, lesson.id + ': success criterion'));
+    }
+  }
+  assert.equal(seenFlows.size, 48);
+  for (const id of guidedIds) assert.ok(reachedLabs.has(id), id + ': no direct lesson link');
+  for (const problem of academy.problems) {
+    references(problem.guidedLabIds, guidedIds, problem.id + ': guided practice');
+    assert.equal(problem.guidedLabId, problem.guidedLabIds[0]);
+  }
+  nonempty(academy.practiceNote, 'honest local-check/reflection distinction');
 });
 
 test('quizzes are answerable, gradeable, and have explanatory feedback', () => {

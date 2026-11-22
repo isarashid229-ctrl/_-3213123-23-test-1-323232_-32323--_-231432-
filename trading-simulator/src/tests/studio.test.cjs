@@ -13,7 +13,7 @@ test('chart-setting restoration validates colors and choices without accepting C
   assert.equal(settings.showVolume, true);
   assert.equal(settings.showGrid, false);
   assert.equal(settings.vwap, true);
-  assert.equal(settings.sessionShading, true);
+  assert.equal(settings.sessionShading, false);
   assert.equal(Object.hasOwn(settings, 'unexpected'), false);
   settings.bullColor = '#ffffff';
   assert.equal(S.cleanSettings().bullColor, '#2962ff');

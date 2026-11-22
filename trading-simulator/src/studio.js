@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const DEFAULTS={bullColor:'#2962ff',bearColor:'#172033',chartTheme:'light',chartType:'candles',showVolume:true,showGrid:true,vwap:false,sessionShading:true};
+  const DEFAULTS={bullColor:'#2962ff',bearColor:'#172033',chartTheme:'light',chartType:'candles',showVolume:true,showGrid:true,vwap:false,sessionShading:false};
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const safeURL=value=>{try{const u=new URL(value);return u.protocol==='https:'?u.href:'';}catch{return '';}};
   function cleanSettings(raw){const out={...DEFAULTS};if(!raw||typeof raw!=='object')return out;for(const key of ['bullColor','bearColor'])if(/^#[0-9a-f]{6}$/i.test(raw[key]))out[key]=raw[key];if(['light','dark'].includes(raw.chartTheme))out.chartTheme=raw.chartTheme;if(['candles','bars','line'].includes(raw.chartType))out.chartType=raw.chartType;for(const key of ['showVolume','showGrid','vwap','sessionShading'])if(typeof raw[key]==='boolean')out[key]=raw[key];return out;}

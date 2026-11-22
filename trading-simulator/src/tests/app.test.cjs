@@ -10,8 +10,8 @@ const E = require('../engine.js');
 const T = require('../time.js');
 const startTime = 1772323200;
 function sampleCSV(count = 100) { return 'time,open,high,low,close,volume\n' + Array.from({ length: count }, (_, i) => `${startTime + i * 900},100,101,99,100,500`).join('\n'); }
-function harness({ count = 100, saved, marketLoad } = {}) {
-  const elements = new Map(), timers = new Map(), store = new Map(), listeners = new Map();
+function harness({ count = 100, saved, marketLoad, withDesk = false } = {}) {
+  const elements = new Map(), timers = new Map(), store = new Map(), listeners = new Map(), emittedEvents = [];
   let nextTimer = 0;
   if (saved) store.set('replaylab-academy-v2', typeof saved === 'string' ? saved : JSON.stringify(saved));
   function element(id) {
@@ -20,20 +20,20 @@ function harness({ count = 100, saved, marketLoad } = {}) {
     const el = {
       id, value: ({ riskPercent: '0.5', speedSelect: '3', dataSymbol: 'BTC-USD', dataInterval: '15m', dataStart: '', csvTimeframe: 'auto', csvAssetClass: 'equity' })[id] || '',
       checked: false, hidden: false, disabled: false, textContent: '', innerHTML: '', dataset: {}, style: {}, open: false,
-      classList: { toggle(name, force) { if (force === undefined ? !classes.has(name) : force) classes.add(name); else classes.delete(name); }, add(name) { classes.add(name); }, remove(name) { classes.delete(name); } },
+      classList: { toggle(name, force) { const on = force === undefined ? !classes.has(name) : force; if (on) classes.add(name); else classes.delete(name); return on; }, add(name) { classes.add(name); }, remove(name) { classes.delete(name); } },
       addEventListener(type, fn) { if (!handlers.has(type)) handlers.set(type, []); handlers.get(type).push(fn); },
       setAttribute(name, value) { attributes.set(name, value); }, getAttribute(name) { return attributes.get(name); }, removeAttribute(name) { attributes.delete(name); }, hasAttribute(name) { return attributes.has(name); },
-      showModal() { this.open = true; }, close() { this.open = false; }, click() {}, remove() {}, scrollIntoView() {}, focus() {}, setSelectionRange() {},
+      showModal() { this.open = true; }, close() { this.open = false; }, click() { if (!this.disabled) for (const fn of handlers.get('click') || []) fn({ target: this, preventDefault() {} }); }, remove() {}, scrollIntoView() {}, focus() {}, setSelectionRange() {},
       appendChild() {}, parentElement: { dataset: {} },
-      closest(selector) { return selector === 'button,a' ? this : null; }, matches(selector) { return selector === '[data-exam-form]' ? !!this.dataset.examForm : selector === '[data-quiz-form]' ? !!this.dataset.quizForm : selector === '[data-review-form]' ? !!this.dataset.reviewForm : false; },
-      querySelector() { return null; }, querySelectorAll() { return []; }, handlers
+      closest(selector) { return selector === 'button,a' || selector === 'button' ? this : null; }, matches(selector) { return selector === '[data-exam-form]' ? !!this.dataset.examForm : selector === '[data-quiz-form]' ? !!this.dataset.quizForm : selector === '[data-review-form]' ? !!this.dataset.reviewForm : false; },
+      querySelector(selector) { return selector === 'span' ? element(id + '-span') : null; }, querySelectorAll() { return []; }, handlers
     };
     elements.set(id, el); return el;
   }
   const document = {
     getElementById: element, title: '', hidden: false,
-    querySelectorAll() { return []; }, querySelector(selector) { return selector === 'dialog[open]' ? [...elements.values()].find(e => e.open) || null : null; },
-    addEventListener(type, fn) { if (!listeners.has(type)) listeners.set(type, []); listeners.get(type).push(fn); }, createElement: () => element('created'), body: element('body')
+    querySelectorAll() { return []; }, querySelector(selector) { return selector === 'dialog[open]' ? [...elements.values()].find(e => e.open) || null : selector === 'meta[name="theme-color"]' ? element('meta-theme-color') : null; },
+    addEventListener(type, fn) { if (!listeners.has(type)) listeners.set(type, []); listeners.get(type).push(fn); }, createElement: () => element('created'), body: element('body'), documentElement: element('documentElement')
   };
   const noop = () => {};
   const window = {
@@ -41,27 +41,29 @@ function harness({ count = 100, saved, marketLoad } = {}) {
     ReplayMarket: { load: marketLoad || (async () => { throw new Error('Test network unavailable'); }) },
     ReplayLabs: { items: ['candles', 'structure', 'levels', 'sizing', 'orders', 'riskreward', 'expectancy', 'discipline'].map(id => ({ id })), render: () => noop },
     ReplayChart: { create: (mount, tooltip, options) => { window.chartOptions = options; return { draw: noop, latest: noop, reset: noop, zoom: noop, setLevelMode: noop }; } },
-    REPLAY_ARCHIVE_CSV: sampleCSV(count), addEventListener: noop, scrollTo: noop
+    REPLAY_ARCHIVE_CSV: sampleCSV(count), addEventListener: noop, dispatchEvent: event => { emittedEvents.push(event.type); return true; }, scrollTo: noop
   };
   const location = { hash: '#practice' };
   const sandbox = Object.assign(window, {
-    window, document, location, structuredClone, Blob, URL, console,
+    window, document, location, structuredClone, Blob, URL, Event, console,
     FormData: class { constructor(form) { this.values = new Map(Object.entries(form.values || {})); } get(key) { return this.values.has(key) ? this.values.get(key) : null; } has(key) { return this.values.has(key); } },
     localStorage: { getItem: key => store.get(key) || null, setItem: (key, value) => store.set(key, value) },
     setTimeout(fn) { const id = ++nextTimer; timers.set(id, fn); return id; }, clearTimeout(id) { timers.delete(id); },
     setInterval(fn) { const id = ++nextTimer; timers.set(id, fn); return id; }, clearInterval(id) { timers.delete(id); }
   });
   vm.createContext(sandbox);
-  for (const file of ['time.js', 'instruments.js', 'academy.js', 'training.js', 'studio.js']) vm.runInContext(fs.readFileSync(path.join(__dirname, '../' + file), 'utf8'), sandbox, { filename: file });
+  for (const file of ['order-controller.js', 'time.js', 'instruments.js', 'academy.js', 'training.js', 'studio.js', 'guided.js', ...(withDesk ? ['desk.js'] : [])]) vm.runInContext(fs.readFileSync(path.join(__dirname, '../' + file), 'utf8'), sandbox, { filename: file });
   const source = fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8');
-  const hook = '\nwindow.__appTest={s,studio,cleanAccount,cleanSnapshot,snapshot,saveNow,advance,rewind,restart,finishConfirm,useData,openTrade,closeTrade,resetPrices,sizeTrade,setSide,loadPublic,loadMore,importCSV,restoreBackup,allTrades,tradeRow};\n})();';
+  const hook = '\nwindow.__appTest={s,studio,desk,cleanAccount,cleanSnapshot,snapshot,saveNow,advance,rewind,restart,finishConfirm,useData,openTrade,closeTrade,executeOrder,riskPreview,updatePractice,renderJournal,resetPrices,sizeTrade,setSide,loadPublic,loadMore,importCSV,restoreBackup,allTrades,tradeRow};\n})();';
   assert.match(source, /\n\}\)\(\);\s*$/);
   vm.runInContext(source.replace(/\n\}\)\(\);\s*$/, hook), sandbox, { filename: 'app.js' });
-  return { app: window.__appTest, element, store, timers, window, document, location, listeners,
-    dispatch(type, target) { const event = { target, preventDefault() {} }; for (const fn of listeners.get(type) || []) fn(event); } };
+  return { app: window.__appTest, element, store, timers, window, document, location, listeners, emittedEvents,
+    dispatch(type, target) { const event = { target, preventDefault() {} }; for (const fn of listeners.get(type) || []) fn(event); },
+    fire(id, type) { const target = element(id), event = { target, preventDefault() {} }; for (const fn of target.handlers.get(type) || []) fn(event); } };
 }
 function enter(h, { side = 'long', stop = 95, target = 110, qty = 1 } = {}) {
   h.app.s.side = side;
+  h.element('useProtection').checked = true;
   h.element('stopPrice').value = String(stop);
   h.element('targetPrice').value = String(target);
   h.element('quantity').value = String(qty);
@@ -70,6 +72,268 @@ function enter(h, { side = 'long', stop = 95, target = 110, qty = 1 } = {}) {
   assert.ok(h.app.s.account.position, h.element('orderError').textContent);
 }
 const plain = value => JSON.parse(JSON.stringify(value));
+
+function quickQuantity(h, value) {
+  h.element('quickQuantity').value = String(value);
+  h.fire('quickQuantity', 'input');
+}
+
+test('desk quick Buy and Sell open from flat and close the entire opposite position', () => {
+  const h = harness({ withDesk: true });
+  assert.equal(h.element('useProtection').checked, false);
+  quickQuantity(h, 3);
+  h.element('quickBuy').click();
+  assert.equal(h.app.s.account.position.side, 'long');
+  assert.equal(h.app.s.account.position.qty, 3);
+  assert.equal(h.app.s.account.position.stop, null);
+  assert.equal(h.element('quickBuy').disabled, true);
+  assert.equal(h.element('quickSell').disabled, false);
+  assert.equal(h.element('quickSell').querySelector('span').textContent, 'SELL · CLOSE');
+  // Entry-only fields must not block getting out of an existing position.
+  h.app.s.guided = true;
+  h.element('tradePlan').value = '';
+  h.element('quantity').value = 'not a number';
+  h.element('stopPrice').value = '-1';
+  h.element('quickSell').click();
+  assert.equal(h.app.s.account.position, null);
+  assert.equal(h.app.s.account.trades.length, 1);
+  assert.equal(h.app.s.account.trades[0].qty, 3);
+  assert.equal(h.app.s.account.trades[0].exitReason, 'opposite action');
+  assert.ok(Math.abs(h.app.s.account.trades[0].netPnl + 0.36) < 1e-7);
+  h.app.s.guided = false;
+  quickQuantity(h, 2);
+  h.element('quickSell').click();
+  assert.equal(h.app.s.side, 'short');
+  assert.equal(h.app.s.account.position.side, 'short');
+  assert.equal(h.app.s.account.position.qty, 2);
+  assert.equal(h.element('quickBuy').querySelector('span').textContent, 'BUY · CLOSE');
+  h.element('quickBuy').click();
+  assert.equal(h.app.s.account.position, null);
+  assert.equal(h.app.s.account.trades.length, 2);
+});
+
+test('desk leaves opposite-side closing usable at the last revealed bar', () => {
+  const h = harness({ count: 10, withDesk: true });
+  quickQuantity(h, 1);
+  h.element('quickBuy').click();
+  h.app.advance(9);
+  assert.ok(h.app.s.account.position);
+  assert.equal(h.element('quickBuy').disabled, true);
+  assert.equal(h.element('quickSell').disabled, false);
+  const before = plain(h.app.s.account);
+  assert.equal(h.app.executeOrder('reverse'), null);
+  assert.deepEqual(plain(h.app.s.account), before);
+  h.element('quickSell').click();
+  assert.equal(h.app.s.account.position, null);
+  assert.equal(h.element('quickBuy').disabled, true);
+  assert.equal(h.element('quickSell').disabled, true);
+});
+
+test('desk reverse is a distinct atomic action and does not inherit the old bracket or plan', () => {
+  const h = harness({ withDesk: true });
+  enter(h, { qty: 2 });
+  const old = plain(h.app.s.account.position);
+  const button = h.element('testReverse'); button.dataset.orderAction = 'reverse';
+  h.dispatch('click', button);
+  assert.equal(h.app.s.account.trades.length, 1);
+  assert.equal(h.app.s.account.trades[0].exitReason, 'reverse');
+  assert.equal(h.app.s.account.position.side, 'short');
+  assert.equal(h.app.s.account.position.qty, old.qty);
+  assert.equal(h.app.s.account.position.stop, null);
+  assert.equal(h.app.s.account.position.target, null);
+  assert.equal(h.app.s.account.position.plan, '');
+  assert.equal(h.app.s.account.position.plannedRisk, null);
+  assert.match(h.element('riskPreview').innerHTML, /Not defined/);
+  const full = harness({ withDesk: true });
+  quickQuantity(full, 999);
+  full.element('quickBuy').click();
+  assert.ok(full.app.s.account.position);
+  const before = plain(full.app.s.account);
+  assert.equal(full.app.executeOrder('reverse'), null, 'closing costs leave insufficient capital for the same-size reverse');
+  assert.deepEqual(plain(full.app.s.account), before, 'failed reverse must not close the old position or charge a fee');
+  assert.match(full.element('orderError').textContent, /1× equity limit/);
+});
+
+test('unprotected positions show undefined planned loss instead of a zero-risk claim', () => {
+  const h = harness({ withDesk: true });
+  quickQuantity(h, 1);
+  assert.match(h.element('riskPreview').innerHTML, /Protective exits.*Not set/);
+  h.element('quickBuy').click();
+  assert.equal(h.app.s.account.position.stop, null);
+  assert.equal(h.app.s.account.position.plannedRisk, null);
+  assert.match(h.element('riskPreview').innerHTML, /Open position planned loss.*Not defined/);
+  assert.match(h.element('riskPreview').innerHTML, /No stop is attached/);
+  assert.match(h.element('positionContent').innerHTML, /<td>—<\/td>/);
+  assert.doesNotMatch(h.element('riskPreview').innerHTML, /planned loss[^<]*<b>\$0\.00/);
+});
+
+test('untouched protective defaults follow the current entry price, while edited prices stay explicit', () => {
+  const defaults = harness({ withDesk: true });
+  defaults.element('useProtection').checked = true;
+  defaults.fire('useProtection', 'change');
+  quickQuantity(defaults, 1);
+  const next = defaults.app.s.cursor + 1;
+  Object.assign(defaults.app.s.data.candles[next], { open: 100, high: 111, low: 99, close: 110 });
+  defaults.app.advance(next);
+  defaults.element('quickBuy').click();
+  assert.equal(defaults.app.s.account.position.stop, 108.9);
+  assert.equal(defaults.app.s.account.position.target, 112.2);
+  const manual = harness({ withDesk: true });
+  manual.element('useProtection').checked = true;
+  manual.fire('useProtection', 'change');
+  quickQuantity(manual, 1);
+  manual.element('stopPrice').value = '95'; manual.fire('stopPrice', 'input');
+  manual.element('targetPrice').value = '130'; manual.fire('targetPrice', 'input');
+  Object.assign(manual.app.s.data.candles[next], { open: 100, high: 111, low: 99, close: 110 });
+  manual.app.advance(next);
+  manual.element('quickBuy').click();
+  assert.equal(manual.app.s.account.position.stop, 95);
+  assert.equal(manual.app.s.account.position.target, 130);
+  const invalid = harness({ withDesk: true });
+  invalid.element('useProtection').checked = true;
+  invalid.fire('useProtection', 'change');
+  quickQuantity(invalid, 1);
+  invalid.element('targetPrice').value = '105'; invalid.fire('targetPrice', 'input');
+  Object.assign(invalid.app.s.data.candles[next], { open: 100, high: 111, low: 99, close: 110 });
+  invalid.app.advance(next);
+  const before = plain(invalid.app.s.account);
+  invalid.element('quickBuy').click();
+  assert.deepEqual(plain(invalid.app.s.account), before);
+  assert.equal(invalid.element('targetPrice').value, '105');
+  assert.match(invalid.element('orderError').textContent, /Target must be above/);
+});
+
+test('Desk v4 backups retain drawings, chart appearance, legacy progress and guided checkpoints together', () => {
+  const h = harness({ withDesk: true });
+  const candles = h.app.s.data.candles;
+  h.app.s.drawings = [
+    { id: 'support-a', type: 'horizontal', price: 99.5 },
+    { id: 'trend-a', type: 'trendline', from: { time: candles[5].time, price: 98 }, to: { time: candles[20].time, price: 101 } }
+  ];
+  h.app.s.levels = [100.5];
+  h.app.s.settings.chartTheme = 'dark';
+  h.app.s.settings.bullColor = '#abcdef';
+  h.app.s.settings.bearColor = '#c12345';
+  h.app.s.settings.sessionShading = true;
+  h.app.s.progress.guided['read-candle'] = { completed: true, completedAt: '2026-11-22T12:00:00.000Z', attempts: 2, passedSteps: 2, totalSteps: 2 };
+  h.app.s.progress.guided['size-long'] = { completed: false, completedAt: '', attempts: 3, passedSteps: 1, totalSteps: 2 };
+  h.app.s.progress.labs.sizing = { best: 80, attempts: 4 };
+  h.app.s.progress.lessons['foundations-1'] = true;
+  h.app.s.progress.quizzes.foundations = { best: 80, attempts: 2 };
+  h.app.s.progress.training['week-1:1'] = true;
+  h.app.saveNow();
+  const restored = harness({ saved: h.store.get('replaylab-academy-v2'), withDesk: true });
+  assert.deepEqual(plain(restored.app.s.drawings), plain(h.app.s.drawings));
+  assert.deepEqual(plain(restored.app.s.settings), plain(h.app.s.settings));
+  assert.deepEqual(plain(restored.app.s.progress), plain(h.app.s.progress));
+  assert.deepEqual(plain(restored.app.s.levels), [100.5]);
+  assert.equal(restored.document.body.dataset.theme, 'dark');
+  assert.equal(restored.document.documentElement.style.colorScheme, 'dark');
+});
+
+test('unknown guided IDs and malformed drawing geometry cannot enter a restored desk', () => {
+  const h = harness({ withDesk: true }), raw = plain(h.app.snapshot()), bars = raw.session.data.candles;
+  raw.progress.guided = {
+    'read-candle': { completed: true, completedAt: '2026-11-22T12:00:00Z', attempts: 2, passedSteps: 2, totalSteps: 2 },
+    'unknown-lab': { completed: true, attempts: 1, passedSteps: 99, totalSteps: 99 }
+  };
+  raw.session.drawings = [
+    { id: 'good', type: 'horizontal', price: 100 },
+    { id: 'negative', type: 'horizontal', price: -100 },
+    { id: 'outside', type: 'trendline', from: { time: bars[0].time - 1, price: 100 }, to: { time: bars[1].time, price: 101 } },
+    { id: 'after-data', type: 'trendline', from: { time: bars[1].time, price: 100 }, to: { time: bars.at(-1).time + 1, price: 101 } },
+    { id: 'good', type: 'horizontal', price: 777 },
+    { id: 'not-a-tool', type: 'unknown', price: 100 }
+  ];
+  const clean = h.app.cleanSnapshot(raw);
+  assert.deepEqual(plain(clean.drawings), [{ id: 'good', type: 'horizontal', price: 100 }]);
+  assert.deepEqual(Object.keys(clean.progress.guided), ['read-candle']);
+  assert.deepEqual(plain(clean.progress.guided['read-candle']), raw.progress.guided['read-candle']);
+});
+
+test('learning and journal summaries count completed guided labs independently of preserved legacy scores', () => {
+  const h = harness({ withDesk: true });
+  for (const lab of h.window.ReplayLabs.items) h.app.s.progress.labs[lab.id] = { best: 100, attempts: 1 };
+  h.app.s.progress.guided['read-candle'] = { completed: true, completedAt: '2026-11-22T12:00:00Z', attempts: 1, passedSteps: 2, totalSteps: 2 };
+  h.app.s.progress.guided['map-levels'] = { completed: true, completedAt: '2026-11-22T12:10:00Z', attempts: 2, passedSteps: 3, totalSteps: 3 };
+  h.app.s.progress.guided['size-long'] = { completed: false, completedAt: '', attempts: 2, passedSteps: 1, totalSteps: 2 };
+  h.app.s.progress.guided['unknown-lab'] = { completed: true, attempts: 1, passedSteps: 2, totalSteps: 2 };
+  h.app.updatePractice();
+  h.app.renderJournal();
+  assert.match(h.element('learningStrip').innerHTML, /2 \/ 12/);
+  assert.match(h.element('learningStrip').innerHTML, /checkpoint in a guided lab/);
+  assert.doesNotMatch(h.element('learningStrip').innerHTML, /Pass a lab at 80%/);
+  assert.match(h.element('journalView').innerHTML, /2 \/ 12/);
+  const restored = harness({ saved: h.app.snapshot(), withDesk: true });
+  restored.app.renderJournal();
+  assert.match(restored.element('learningStrip').innerHTML, /2 \/ 12/);
+  assert.match(restored.element('journalView').innerHTML, /2 \/ 12/);
+  assert.equal(Object.keys(restored.app.s.progress.labs).length, 8, 'legacy scores remain available after migration');
+});
+
+test('theme controls update the actual desk, preserve custom candle colors and persist the result', () => {
+  const h = harness({ withDesk: true });
+  assert.equal(h.document.body.dataset.theme, 'light');
+  h.app.s.settings.bullColor = '#102030';
+  h.app.s.settings.bearColor = '#a1b2c3';
+  h.element('themeToggle').click();
+  assert.equal(h.app.s.settings.chartTheme, 'dark');
+  assert.equal(h.document.body.dataset.theme, 'dark');
+  assert.equal(h.document.documentElement.style.colorScheme, 'dark');
+  assert.equal(h.app.s.settings.bullColor, '#102030');
+  assert.equal(h.app.s.settings.bearColor, '#a1b2c3');
+  assert.match(h.element('themeToggle').getAttribute('aria-label'), /Switch to light mode/);
+  assert.deepEqual(h.emittedEvents, ['replaylab-theme']);
+  h.app.saveNow();
+  const restored = harness({ saved: h.store.get('replaylab-academy-v2'), withDesk: true });
+  assert.equal(restored.document.body.dataset.theme, 'dark');
+  assert.equal(restored.app.s.settings.bullColor, '#102030');
+  assert.equal(restored.app.s.settings.bearColor, '#a1b2c3');
+});
+
+test('desk watchlist and coach context never read unrevealed bars or inactive-market prices', () => {
+  const h = harness({ count: 500, withDesk: true });
+  quickQuantity(h, 1);
+  for (let i = 0; i < 12; i++) { h.element('quickBuy').click(); h.element('quickSell').click(); }
+  const bars = h.app.s.data.candles, cursor = h.app.s.cursor;
+  h.app.s.data.candles = new Proxy(bars, { get(target, property, receiver) {
+    if (/^\d+$/.test(String(property)) && Number(property) > cursor) throw new Error('future candle access: ' + property);
+    return Reflect.get(target, property, receiver);
+  } });
+  for (const item of h.window.ReplayInstruments.items) item.candles = new Proxy(item.candles, { get(target, property, receiver) {
+    if (/^\d+$/.test(String(property))) throw new Error('inactive market price access: ' + item.id);
+    return Reflect.get(target, property, receiver);
+  } });
+  h.app.desk.reset();
+  assert.doesNotThrow(() => h.app.desk.update());
+  let context;
+  assert.doesNotThrow(() => { context = h.app.desk.getContext(); });
+  assert.equal(context.currentCandle.time, bars[cursor].time);
+  assert.equal(context.revealedCandles.length, 80);
+  assert.equal(context.revealedCandles[0].time, bars[cursor - 79].time);
+  assert.ok(context.revealedCandles.every(bar => bar.time <= bars[cursor].time));
+  assert.equal(context.account.trades.length, 10);
+  assert.ok(!Object.hasOwn(context, 'data'));
+  assert.ok(!Object.hasOwn(context, 'candles'));
+  assert.match(h.element('deskWatchlist').innerHTML, /class="watch-price">Open<\/span>/);
+});
+
+test('restoring a same-symbol same-cursor backup refreshes the displayed watchlist price', async () => {
+  const h = harness({ withDesk: true });
+  h.app.studio.loadInstrument('aapl-3m');
+  const raw = plain(h.app.snapshot()), before = raw.session.data.candles[raw.session.cursor].close;
+  const after = Math.round((before + 1) * 100) / 100;
+  assert.ok(h.element('deskWatchlist').innerHTML.includes('class="watch-price">' + before.toFixed(2) + '</span>'));
+  raw.session.data.candles[raw.session.cursor].close = after;
+  raw.session.data.candles[raw.session.cursor].high = Math.max(after, raw.session.data.candles[raw.session.cursor].high);
+  const serialized = JSON.stringify(raw);
+  const pending = h.app.restoreBackup({ size: serialized.length, text: async () => serialized });
+  await new Promise(resolve => setImmediate(resolve));
+  h.app.finishConfirm(true); await pending;
+  assert.equal(h.app.s.data.candles[h.app.s.cursor].close, after);
+  assert.ok(h.element('deskWatchlist').innerHTML.includes('class="watch-price">' + after.toFixed(2) + '</span>'), 'active watchlist price must match the restored current close');
+  assert.equal(h.element('buyQuote').textContent, after.toFixed(2));
+});
 
 test('initial replay leaves useful future candles for both short and full datasets', () => {
   for (const count of [10, 20, 100, 2976]) {
@@ -256,6 +520,7 @@ test('tiny valid CSV prices retain visible quotes and usable default protective 
     await h.app.importCSV({ name: 'tiny-prices.csv', size: csv.length, text: async () => csv });
     assert.equal(h.app.s.data.mode, 'csv');
     assert.equal(Number(h.element('lastPrice').textContent.replace(/[$,]/g, '')), price);
+    h.element('useProtection').checked = true;
     const stop = Number(h.element('stopPrice').value), target = Number(h.element('targetPrice').value), direction = side === 'long' ? 1 : -1;
     assert.ok(stop > 0 && target > 0);
     assert.ok(direction * (price - stop) > 0, 'default stop remains on the loss side');
@@ -305,6 +570,7 @@ test('stock selection, whole-share risk sizing and metadata survive a reload', (
   assert.equal(h.app.s.data.mode, 'equity');
   assert.equal(h.app.s.data.timeframe, '3m');
   assert.equal(h.app.s.data.volumeKind, 'ticks');
+  h.element('useProtection').checked = true;
   h.app.sizeTrade();
   const qty = Number(h.element('quantity').value);
   assert.ok(qty >= 1 && Number.isInteger(qty));
@@ -313,6 +579,7 @@ test('stock selection, whole-share risk sizing and metadata survive a reload', (
   assert.equal(qty, Math.floor(ideal.qty));
   h.app.openTrade({ preventDefault() {} });
   assert.ok(h.app.s.account.position);
+  assert.ok(Number.isFinite(h.app.s.account.position.plannedRisk) && h.app.s.account.position.plannedRisk > 0);
   assert.ok(h.app.s.account.position.plannedRisk <= 500);
   h.app.s.settings.vwap = true;
   assert.equal(h.window.chartOptions.getData().settings.vwap, false, 'tick-count data must not masquerade as share-volume VWAP');
@@ -400,7 +667,7 @@ test('restoring a backup updates displayed direction and speed together with sta
   assert.equal(h.app.s.speed, 10);
   assert.equal(h.element('shortSide').getAttribute('aria-pressed'), 'true');
   assert.equal(h.element('longSide').getAttribute('aria-pressed'), 'false');
-  assert.equal(h.element('openTrade').textContent, 'Open paper short');
+  assert.equal(h.element('openTrade').textContent, 'Sell at market');
   assert.equal(h.element('speedSelect').value, '10');
 });
 

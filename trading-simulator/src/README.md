@@ -1,10 +1,10 @@
-# ReplayLab Studio 3
+# ReplayLab Desk 4
 
 A self-contained historical replay and paper-trading workspace with a structured learning program. The published application is `trading-simulator/index.html`; editable source and regression tests live in `trading-simulator/src/`.
 
 ## Run and build
 
-Node.js 20 or newer is sufficient. No package installation, build service, API key, external chart library or font download is required.
+Node.js 20 or newer is sufficient. The historical replay, paper account, lessons, labs and Local guide require no API key, external chart library or font download. A live generative coach is a separate optional server connection and is not enabled in this static release.
 
 ```sh
 cd trading-simulator/src
@@ -14,11 +14,35 @@ npm run build
 
 The build creates `dist/index.html`. Publish that file as `trading-simulator/index.html`. On the managed preview environment, `.openai/hosting.json` points the preview to `dist`.
 
-## Studio workspace
+## What changed in Desk 4
+
+- Full-width trading desk: drawing rail, dominant chart, watchlist, compact market ticket, and bottom positions/history/session panels.
+- Actual quick Buy/Sell orders, visible fill receipts, opposite-side closing, explicit Close and atomic Reverse. Optional stop/target protection; a simple market order no longer fails because of empty or stale protective prices.
+- Whole-app light/dark themes, blue rising candles and neutral falling candles. All chart and trade timestamps stay in New York time.
+- Horizontal lines, two-point trendlines, selection/deletion, undo, manual price scaling, revealed-only fill markers, and sharp SVG charts.
+- Twelve guided historical-stock labs. Each has its own $10,000 account, concise teaching, actual orders, graded checkpoints, hints and videos. Completion checks process; it does not require a profitable trade. Continue free practice after passing.
+- All 48 lessons now have a specific See it / Try it / Review it flow, a linked chart lab, and explicit success criteria. The 16-week schedule and 80 module questions remain available.
+- Floating coach drawer with saved threads, local screenshot/video attachments, screen recording, export, and a course-grounded Local guide. It clearly identifies when a live AI connection is needed.
+
+### Trading semantics
+
+Buy while flat opens a long. Sell while flat opens a simulated short. Buy against a short or Sell against a long closes the entire position. Additional same-side exposure is not supported. Reverse closes and opens the opposite direction atomically; the replacement inherits no previous stop or target. A failed replacement leaves the existing account unchanged.
+
+The ticket's Buy/Long and Sell/Short tabs select direction; the **Buy at market / Sell at market** button submits it. The quote buttons above the chart submit immediately. Stops and targets are optional in free replay. Enabling protection creates current-price defaults, while manually edited absolute prices remain yours and are validated at submission.
+
+### Coach status and privacy
+
+The published site starts in **Local guide** mode. This is built-in course retrieval and deterministic replay feedback, not a generative model. It does not browse the web or interpret screenshots/video. It can recommend the supplied official educational resources and explain the visible paper-account context.
+
+Conversation text and attachment blobs save in this browser through IndexedDB, with text-only fallback if media storage is unavailable. Chat export is separate from the workspace backup. Attachments are not sent to an external service in Local guide mode. A configured live service receives selected images or timestamped video frames only when Send is pressed; the original video and audio are not sent. Screen recording requires browser permission and stops after 60 seconds or when the drawer closes.
+
+`backend/worker.mjs` is an optional, undeployed server component. No provider key is included in this repository or the public HTML. Its provider integration was tested with mocked responses only; no live AI request or backend deployment was performed for this release. Secure credential approval and deployment remain required before live web research and vision can be claimed.
+
+## Workspace details
 
 - SVG price charts remain sharp across screen densities, browser zoom and resizing. The default chart has a white surface, blue rising candles and near-black falling candles.
 - User preferences include candle colors, light/dark chart appearance, candlesticks/OHLC bars/close line, volume, grid, EMA 9/21, New York core-hours reference shading and eligible NY-day VWAP.
-- Pan and zoom, mark price levels, expand the chart, play or step through replay, and inspect only revealed candles. `Space` plays/pauses and `N` advances a candle when not editing a field. Focus the chart for keyboard zoom/pan; `End` returns to the latest revealed bar.
+- Pan and zoom, draw levels and trendlines, expand the chart, play or step through replay, and inspect only revealed candles. `Space` plays/pauses and `N` advances a candle when not editing a field. Focus the chart for keyboard zoom/pan; `End` returns to the latest revealed bar.
 - All human-facing intraday timestamps use `America/New_York`, with automatic EST/EDT handling. Daily studies show session dates. Numeric timestamps remain Unix seconds for arithmetic and persistence.
 - Searchable stock/ETF catalog, filters, favorites, bundled Bitcoin history, optional public crypto candles, and OHLCV CSV import.
 

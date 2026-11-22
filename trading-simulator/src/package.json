@@ -1,8 +1,8 @@
 {
   "name": "replaylab-academy",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "private": true,
-  "description": "Sharp historical market replay, New York time, stock practice and a 16-week trading education program",
+  "description": "Chart-first historical replay, paper trading, practical lessons, guided labs, and a floating coach",
   "scripts": {
     "build": "node build.cjs",
     "test": "node build.cjs && node --test tests/*.test.cjs"

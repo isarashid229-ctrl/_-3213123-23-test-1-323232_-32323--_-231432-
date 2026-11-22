@@ -1,42 +1,36 @@
-# Studio 3 validation — November 21, 2026
+# ReplayLab Desk 4 — verification record
 
-## Automated result
+Release date: November 21, 2026 (user-local date).
 
-`node build.cjs && node --test tests/*.test.cjs`: **91 passed, 0 failed**.
+## Automated checks
 
-| Suite | Tests | Material behavior checked |
-|---|---:|---|
-| App integration | 24 | Account/persistence integrity, public data readiness, source-pinned append, invalid-data atomicity, old backups, settings, training, assessments, daily dates, tiny prices, restore concurrency and direction/speed UI |
-| Chart | 14 | SVG/vector output, sharp 14px labels, zero access to future bars, indicators, DST, ticks versus volume, daily semantics, modes, bounds, pan/zoom, annotations, keyboard and cancellation cleanup |
-| Curriculum/content | 7 | Stable IDs, complete modules and weeks, answer keys, explanations, reference mappings, source URLs and self-contained built page |
-| Paper engine | 15 | OHLC/CSV validation, fees/slippage, sizing, 1× exposure, long/short accounting, entry-bar protection, stop/target ambiguity, gaps and closed-trade statistics |
-| Public market adapters | 15 | Pair/quote integrity, provider fallback, exact dates, New York start inputs, committed candles, continuation, timeouts and competitor cancellation |
-| New York time | 7 | EST/EDT, UTC-date rollover, nonexistent/repeated DST wall times, date validation and core-hour boundaries |
-| Bundled instruments | 5 | Actual catalog/timeframe coverage, OHLC checks, data digests, source dates, tick-volume definitions and next-bar exits |
-| Studio | 4 | Safe chart preference restoration, bounded training progress, exact assessment scoring and timeframe inference |
+181 application, chart, local coach, data, time, content, guided-lab and execution tests pass. An additional 12 server tests using mocked provider responses passed before API work was paused for credential approval. No live model request was made.
 
-## Browser review
+Regression coverage includes:
 
-Checked the rendered application at desktop width and in a 390 × 844 mobile frame (375px content width after the vertical scrollbar). Practice and Training layouts had no horizontal content overflow.
+- Immediate Buy/Sell fills, opposite-side full closes, same-side/double-submit rejection, atomic reversal and end-of-data closing.
+- Blank optional exits, manually edited brackets, refreshed default protections, risk/exposure limits, fees, slippage, next-bar activation, gaps and same-candle stop priority.
+- Backup reconstruction of actual accounting, drawing/settings/guided-progress migration, same-symbol watchlist refresh and correct new-lab totals.
+- Hidden future candles, entry/exit marker timing, manual price scaling, drawing selection, isolated chart instances and light/dark redraw.
+- All 12 labs through real engine actions, independent accounts, final checkpoint revalidation, saved completion and post-completion free practice.
+- Local course retrieval, no fake media interpretation, attachment limits, Blob persistence, text fallback, history recovery and teardown.
+- CSV validation, data-source failure preservation, public-candle continuation, stock sample metadata and New York DST transitions.
 
-Verified through the real UI:
+## Browser checks
 
-- Blue/black SVG candles and price/axis readability; larger focused chart.
-- Switching to a dark close-line chart, then restoring the blue/black preset.
-- AAPL intraday sample selection, bar stepping and Eastern daylight time.
-- Searching SPY, loading its daily study and displaying the source session date without a fabricated clock time.
-- Weekly completion and written notes surviving reload.
-- Twelve-question diagnostic submission, 25% result for an intentionally mixed answer set, twelve explanations and skill-specific review links.
-- Mobile chart and training navigation, including access to the starting assessment.
-- AAPL automatic sizing, a 138-share paper long, advancing one bar, manual close and journal reconciliation: −$45.05 net with $35.55 modeled fees and New York entry-bar time.
-- No application-origin console errors during the stock trade and journal flow.
-
-Browser extension metadata warnings were observed; they were emitted by the browser extension, not ReplayLab application code.
-
-## Fixed regressions
-
-A saved short direction now agrees with the order controls after restore. Public data loading re-enables continuation controls. Pending requests cannot mix an old market into a restored backup. An intentionally empty favorites list stays empty. Invalid replacement data leaves the current account intact. Date-only CSV rows preserve their New York session date through DST. Very small positive CSV prices retain visible precision and usable protective levels. Older Academy progress and account records remain compatible.
+- Compared the live TradingView chart layout with the user's reference screenshots and official TradingView/FX Replay guidance.
+- Bought a stock paper position from the quote button, stepped replay, reversed it, closed by opposite-side Buy, opened a fresh short and closed it manually. Account figures and fill markers updated.
+- Checked the full-width desktop terminal and both themes; corrected dark input/title contrast and default session tint.
+- Completed the protective-bracket lab: deliberately wrong answer, explanatory retry, correct answer, real 5-share bracket order and verified completion.
+- Opened the floating coach, asked about repeated stop-outs, received a relevant course explanation and official video links, reloaded and verified the saved thread.
+- Added a supplied screenshot using the actual browser file chooser. The attachment remained local and the UI identified Local guide's inability to interpret media.
+- Checked a 390px mobile frame: 375px available content width and 375px scroll width, with all navigation destinations available.
+- Checked course-to-lab links and saved course progress.
 
 ## Practical limits
 
-Tests do not make third-party sample data independently verified, guarantee public API access in every region, or prove real-world execution quality. External video pages were checked as publisher resources, but playback inside every user's browser was not tested. No real-money transaction or brokerage integration is present. Paper results and course completion do not predict professional profitability.
+Historical samples are not live market feeds. Stock intraday samples have tick-count volume; VWAP is disabled for those datasets. Daily samples are context studies. One-position paper execution does not model a real order book, borrow availability, funding, taxes, or futures multipliers.
+
+Native screen capture depends on browser permissions/support and was not initiated during QA. Server-backed web research and screenshot/video interpretation are not enabled or live-tested. Local feedback is clearly labeled and never presented as a connected AI model.
+
+The course is a structured practice program; completion does not certify professional status or promise profitability.
