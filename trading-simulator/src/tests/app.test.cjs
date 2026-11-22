@@ -73,6 +73,39 @@ function enter(h, { side = 'long', stop = 95, target = 110, qty = 1 } = {}) {
 }
 const plain = value => JSON.parse(JSON.stringify(value));
 
+test('resting limit entries wait, survive reload, fill on a later bar, and close through the ordinary opposite button',()=>{
+ const h=harness({withDesk:true});h.app.s.orderType='limit';h.element('entryOrderPrice').value='98';h.element('quantity').value='2';
+ const receipt=h.app.executeOrder('buy');assert.equal(receipt.type,'pending');assert.equal(h.app.s.account.balance,100000);assert.equal(h.app.s.account.position,null);assert.equal(h.element('quickBuy').disabled,true);
+ h.app.saveNow();const restored=harness({saved:h.store.get('replaylab-academy-v2'),withDesk:true});assert.equal(restored.app.s.account.pendingOrders.length,1);
+ assert.equal(restored.app.s.orderType,'limit');assert.equal(Number(restored.element('entryOrderPrice').value),98);assert.equal(Number(restored.element('quantity').value),2);
+ const at=restored.app.s.cursor+1;restored.app.s.data.candles[at]={time:startTime+at*900,open:99,high:100,low:97,close:99.5,volume:500};restored.app.advance(at);
+ assert.equal(restored.app.s.account.pendingOrders.length,0);assert.equal(restored.app.s.account.position.qty,2);assert.ok(restored.app.s.account.position.entryPrice<=98);
+ assert.match(restored.element('orderReceipt').textContent,/filled/i);assert.equal(restored.element('orderReceipt').hidden,false);
+ restored.app.s.orderType='limit';const close=restored.app.executeOrder('sell');assert.equal(close.type,'closed');assert.equal(restored.app.s.account.position,null);assert.equal(restored.app.s.account.trades.length,1);
+});
+
+test('automatic rejected entry and protective exit replace the persistent ticket receipt',()=>{
+ const h=harness();h.app.s.orderType='stop';h.element('entryOrderPrice').value='105';h.element('quantity').value='900';h.app.executeOrder('buy');assert.equal(h.app.s.account.pendingOrders.length,1);
+ let at=h.app.s.cursor+1;h.app.s.data.candles[at]={time:startTime+at*900,open:120,high:121,low:119,close:120,volume:500};h.app.advance(at);
+ assert.equal(h.app.s.account.position,null);assert.equal(h.app.s.account.pendingOrders.length,0);assert.match(h.element('orderReceipt').textContent,/reject/i);assert.equal(h.element('orderReceipt').hidden,false);
+ h.app.s.orderType='market';enter(h,{qty:1,stop:115,target:130});at=h.app.s.cursor+1;h.app.s.data.candles[at]={time:startTime+at*900,open:119,high:120,low:114,close:116,volume:500};h.app.advance(at);
+ assert.equal(h.app.s.account.position,null);assert.match(h.element('orderReceipt').textContent,/closed:.*stop/i);assert.equal(h.element('orderReceipt').hidden,false);
+});
+
+test('main desk partial exits and modified protection preserve exact account state across save and reload',()=>{
+ const h=harness({withDesk:true});enter(h,{qty:4});const at=h.app.s.cursor+1;h.app.s.data.candles[at]={time:startTime+at*900,open:100,high:104,low:99,close:103,volume:500};h.app.advance(at);
+ const modify=h.app.executeOrder('modify',{stop:101,target:108});assert.equal(modify.type,'modified');assert.equal(h.app.s.account.position.stop,101);
+ const partial=h.app.executeOrder('close',{qty:1});assert.equal(partial.type,'reduced');assert.equal(h.app.s.account.position.qty,3);assert.equal(h.app.s.account.trades.length,1);
+ h.app.saveNow();const restored=harness({saved:h.store.get('replaylab-academy-v2'),withDesk:true});const expected=plain(h.app.s.account);expected.trades.forEach(t=>t.mistake??='');assert.deepEqual(plain(restored.app.s.account),expected);
+ assert.equal(E.stats(restored.app.s.account.trades).totalTrades,0);restored.app.closeTrade();assert.equal(restored.app.s.account.position,null);assert.equal(E.stats(restored.app.s.account.trades).totalTrades,1);assert.equal(E.stats(restored.app.s.account.trades).closedFills,2);
+});
+
+test('pending cancellation charges nothing, and market switching archives the cancelled order ledger',()=>{
+ const h=harness({withDesk:true});h.app.s.orderType='stop';h.element('entryOrderPrice').value='105';h.element('quantity').value='1';h.app.executeOrder('buy');const order=h.app.s.account.pendingOrders[0];
+ assert.equal(h.app.executeOrder('cancel',{orderId:order.id}).type,'cancelled');assert.equal(h.app.s.account.balance,100000);assert.equal(h.app.s.account.pendingOrders.length,0);
+ h.app.useData({...h.app.s.data,symbol:'NEXT'});assert.equal(h.app.s.history.length,1);assert.equal(h.app.s.history[0].account.position,null);assert.equal(h.app.s.history[0].account.events.at(-1).kind,'cancel');
+});
+
 function quickQuantity(h, value) {
   h.element('quickQuantity').value = String(value);
   h.fire('quickQuantity', 'input');
@@ -332,7 +365,7 @@ test('restoring a same-symbol same-cursor backup refreshes the displayed watchli
   h.app.finishConfirm(true); await pending;
   assert.equal(h.app.s.data.candles[h.app.s.cursor].close, after);
   assert.ok(h.element('deskWatchlist').innerHTML.includes('class="watch-price">' + after.toFixed(2) + '</span>'), 'active watchlist price must match the restored current close');
-  assert.equal(h.element('buyQuote').textContent, after.toFixed(2));
+  assert.equal(h.element('buyQuote').textContent, (after*(1+E.DEFAULT_SLIPPAGE)).toFixed(2), 'quick quote estimates the buy fill including slippage');
 });
 
 test('initial replay leaves useful future candles for both short and full datasets', () => {
@@ -453,7 +486,7 @@ test('backup reconstruction recalculates derived P&L and rejects inconsistent ba
   assert.throws(() => h.app.cleanAccount({ ...raw, feeRate: 0 }), /different execution model/);
   const malformed = plain(raw);
   malformed.trades[0].exitBarIndex = h.app.s.cursor + 1;
-  assert.throws(() => h.app.cleanAccount(malformed, h.app.s.cursor), /trade sequence is invalid/);
+  assert.throws(() => h.app.cleanAccount(malformed, h.app.s.cursor), /trade sequence is invalid|execution ledger/);
 });
 
 test('invalid CSV and failed public requests preserve the active dataset and account', async () => {

@@ -71,7 +71,8 @@ test('same-side actions reject accidental pyramiding and repeated Buy clicks cha
   O.execute(account, request());
   rejectsWithoutChange(account, request(), 'POSITION_ALREADY_OPEN');
   assert.throws(() => O.preview(account, request()), /Use Sell to close it, or Reverse/);
-  O.execute(account, later({ action: 'close', qty: -1 }));
+  rejectsWithoutChange(account, later({ action: 'close', qty: -1 }), 'INVALID_QUANTITY');
+  O.execute(account, later({ action: 'close', qty: undefined }));
   rejectsWithoutChange(account, later({ action: 'close' }), 'NO_POSITION');
   rejectsWithoutChange(account, later({ action: 'reverse' }), 'NO_POSITION');
 });
@@ -211,4 +212,116 @@ test('mixed market actions reconstruct through the original backup accounting fo
   assert.deepEqual(rebuilt.position, account.position);
   assert.deepEqual(rebuilt.trades.map(t => t.netPnl), account.trades.map(t => t.netPnl));
   assert.equal(account.trades[0].notes, 'A saved review');
+});
+
+test('opposite-side closes ignore stale pending-entry ticket fields, including invalid order type', () => {
+  for (const orderType of ['limit', 'stop', 'stale-ticket']) {
+    for (const action of ['buy', 'sell']) {
+      const account = E.createAccount();
+      O.execute(account, request({ action }));
+      const opposite = action === 'buy' ? 'sell' : 'buy';
+      const result = O.execute(account, later({ action: opposite, orderType, orderPrice: -1, qty: 'bad', stop: 'bad', target: -1, allowEntry: false }));
+      assert.equal(result.type, 'closed');
+      assert.equal(result.trade.qty, 10);
+      assert.equal(account.pendingOrders.length, 0);
+      assert.equal(account.position, null);
+    }
+  }
+});
+
+test('explicit partial-close preview is nonmutating and execution retains the remaining position', () => {
+  const account = E.createAccount();
+  O.execute(account, request({ stop: 95, target: 110 }));
+  const before = clone(account), input = later({ action: 'close', qty: 3, allowEntry: false });
+  const preview = O.preview(account, input);
+  assert.equal(preview.type, 'reduced');
+  assert.equal(preview.position.qty, 7);
+  assert.equal(preview.trade.qty, 3);
+  assert.match(preview.message, /Ready to close 3 units/);
+  assert.deepEqual(account, before);
+  const receipt = O.execute(account, input);
+  assert.deepEqual(receipt.position, preview.position);
+  assert.deepEqual(receipt.trade, preview.trade);
+  assert.equal(account.events.length, 2);
+  const closed = O.execute(account, later({ action: 'close', qty: undefined, allowEntry: false }));
+  assert.equal(closed.type, 'closed');
+  assert.equal(closed.trade.qty, 7);
+  approx(account.balance, account.initialBalance + account.trades.reduce((sum, trade) => sum + trade.netPnl, 0));
+  assert.deepEqual(E.restoreAccount(clone(account)), account);
+});
+
+test('protection edits preserve unspecified fields, allow removal and remain atomic on invalid input', () => {
+  const account = E.createAccount();
+  O.execute(account, request({ stop: 95, target: 110 }));
+  const before = clone(account), input = later({ action: 'modify', price: 106, stop: 102, allowEntry: false });
+  const preview = O.preview(account, input);
+  assert.equal(preview.type, 'modified');
+  assert.equal(preview.position.stop, 102);
+  assert.equal(preview.position.target, 110);
+  assert.deepEqual(account, before);
+  O.execute(account, input);
+  assert.equal(account.position.plannedRisk, before.position.plannedRisk);
+  assert.equal(account.balance, before.balance);
+  rejectsWithoutChange(account, later({ action: 'modify', price: 106, stop: 107 }), 'INVALID_STOP');
+  rejectsWithoutChange(account, later({ action: 'modify', price: 106, target: 105 }), 'INVALID_TARGET');
+  O.execute(account, later({ action: 'modify', price: 106, stop: '', target: null }));
+  assert.equal(account.position.stop, null);
+  assert.equal(account.position.target, null);
+  assert.deepEqual(E.restoreAccount(clone(account)), account);
+});
+
+test('pending preview and cancellation preserve fees, commit their ledger and keep receipts honest', () => {
+  for (const [action, orderType, orderPrice] of [['buy', 'limit', 95], ['sell', 'limit', 105], ['buy', 'stop', 105], ['sell', 'stop', 95]]) {
+    const account = E.createAccount(), before = clone(account);
+    const input = request({ action, orderType, orderPrice });
+    const preview = O.preview(account, input);
+    assert.equal(preview.type, 'pending');
+    assert.equal(preview.position, null);
+    assert.equal(preview.trade, null);
+    assert.deepEqual(account, before);
+    const placed = O.execute(account, input);
+    assert.deepEqual(placed.order, preview.order);
+    assert.equal(placed.order, account.pendingOrders[0]);
+    assert.equal(account.balance, 100000);
+    assert.deepEqual(account.events.map(e => e.kind), ['place']);
+    const cancellation = later({ action: 'cancel', orderId: placed.order.id, allowEntry: false });
+    const withOrder = clone(account);
+    assert.equal(O.preview(account, cancellation).type, 'cancelled');
+    assert.deepEqual(account, withOrder);
+    rejectsWithoutChange(account, { ...cancellation, orderId: 'different' });
+    assert.equal(O.execute(account, cancellation).type, 'cancelled');
+    assert.equal(account.balance, 100000);
+    assert.equal(account.pendingOrders.length, 0);
+    assert.deepEqual(account.events.map(e => e.kind), ['place', 'cancel']);
+    assert.deepEqual(E.restoreAccount(clone(account)), account);
+  }
+});
+
+test('pending entries cannot overlap another order or position and are blocked at replay end', () => {
+  const account = E.createAccount();
+  rejectsWithoutChange(account, request({ orderType: 'stop', orderPrice: 105, allowEntry: false }), 'DATA_ENDED');
+  rejectsWithoutChange(account, request({ orderType: 'unknown' }), 'INVALID_ORDER_TYPE');
+  O.execute(account, request({ orderType: 'limit', orderPrice: 95 }));
+  rejectsWithoutChange(account, request(), 'PENDING_ORDER');
+  rejectsWithoutChange(account, request({ orderType: 'stop', orderPrice: 105 }), 'PENDING_ORDER');
+  const [event] = E.processBar(account, { time: time + 900, open: 100, high: 105, low: 94, close: 96 }, 1);
+  assert.equal(event.type, 'opened');
+  rejectsWithoutChange(account, later({ orderType: 'limit', orderPrice: 90 }), 'POSITION_ALREADY_OPEN');
+  O.execute(account, later({ action: 'sell', qty: undefined }));
+  assert.deepEqual(E.restoreAccount(clone(account)), account);
+});
+
+test('reversing a partially closed position uses remaining size and is atomic if replacement validation fails', () => {
+  const account = E.createAccount();
+  O.execute(account, request({ stop: 95, target: 110 }));
+  O.execute(account, later({ action: 'close', qty: 3 }));
+  rejectsWithoutChange(account, later({ action: 'reverse', qty: undefined, stop: 99 }), 'INVALID_STOP');
+  const reversed = O.execute(account, later({ action: 'reverse', qty: undefined }));
+  assert.equal(reversed.trade.qty, 7);
+  assert.equal(reversed.position.qty, 7);
+  assert.equal(reversed.position.side, 'short');
+  assert.equal(account.trades.length, 2);
+  assert.equal(E.stats(account.trades).totalTrades, 1);
+  approx(account.balance, account.initialBalance + account.trades.reduce((sum, trade) => sum + trade.netPnl, 0) - account.position.entryFee);
+  assert.deepEqual(E.restoreAccount(clone(account)), account);
 });

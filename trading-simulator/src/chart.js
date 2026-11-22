@@ -91,7 +91,7 @@
       if (!frame && !disposed) frame = raf(() => { frame = 0; draw(); });
     };
     function hideTooltip() { if (tooltip) tooltip.hidden = true; }
-    function drawingMode() { return tool === 'horizontal' || tool === 'trendline'; }
+    function drawingMode() { return ['horizontal','trendline','fib','rectangle','measure'].includes(tool); }
     function selectDrawing(value) {
       if (selectedDrawing === value) return;
       selectedDrawing = value;
@@ -126,7 +126,7 @@
       redraw(); return hadPending;
     }
     function setTool(value) {
-      if (!['crosshair', 'cursor', 'horizontal', 'trendline'].includes(value)) return;
+      if (!['crosshair', 'cursor', 'horizontal', 'trendline','fib','rectangle','measure'].includes(value)) return;
       tool = value; cancelDrawing(); drag = null; press = null;
       element.style.cursor = tool === 'cursor' ? 'grab' : 'crosshair';
       redraw();
@@ -362,6 +362,28 @@
           if (active) parts.push(drawingHandle({ x: left + plotWidth / 2, y: py }, shade));
           parts.push('</g>');
           drawingHits.push({ id: drawingId, type: 'horizontal', from: { x: left, y: py }, to: { x: plotRight, y: py }, label: 'Horizontal level ' + price(drawing.price) });
+        } else if(['fib','rectangle','measure'].includes(drawing.type)){
+          if(!drawing.from||!drawing.to||revealedIndex(drawing.from.time)===null||revealedIndex(drawing.to.time)===null)continue;
+          const from=anchorPoint(drawing.from),to=anchorPoint(drawing.to);if(!from||!to||from.time===to.time)continue;
+          const x1=Math.min(from.x,to.x),x2=Math.max(from.x,to.x),y1=Math.min(from.y,to.y),y2=Math.max(from.y,to.y);
+          parts.push(`<g data-drawing-id="${escape(drawingId)}" data-drawing-type="${drawing.type}" data-selected="${active}">`);
+          if(drawing.type==='rectangle'){
+            parts.push(`<rect x="${coordinate(x1)}" y="${coordinate(y1)}" width="${coordinate(x2-x1)}" height="${coordinate(y2-y1)}" fill="${shade}" fill-opacity=".08" stroke="${shade}" stroke-width="${weight}"/>`);
+            for(const [a,b] of [[{x:x1,y:y1},{x:x2,y:y1}],[{x:x2,y:y1},{x:x2,y:y2}],[{x:x2,y:y2},{x:x1,y:y2}],[{x:x1,y:y2},{x:x1,y:y1}]])drawingHits.push({id:drawingId,type:drawing.type,from:a,to:b,label:'Price zone '+price(Math.min(from.price,to.price))+'–'+price(Math.max(from.price,to.price))});
+          }else if(drawing.type==='fib'){
+            for(const ratio of [0,.236,.382,.5,.618,.786,1]){
+              const value=to.price+(from.price-to.price)*ratio,py=y(value),label=(ratio*100).toFixed(1)+'% · '+price(value);
+              parts.push(line(x1,py,x2,py,shade,`stroke-width="${ratio===.5?weight+.4:weight}" stroke-opacity="${ratio===0||ratio===1?1:.7}"`));
+              parts.push(text(x1+5,py-5,label,`fill="${shade}" font-size="12" paint-order="stroke" stroke="${palette.background}" stroke-width="3"`));
+              drawingHits.push({id:drawingId,type:drawing.type,from:{x:x1,y:py},to:{x:x2,y:py},label:'Fibonacci reference '+label});
+            }
+          }else{
+            const change=to.price-from.price,changePct=change/from.price*100,barCount=Math.abs(to.index-from.index),label=(change>=0?'+':'')+price(change)+' ('+(changePct>=0?'+':'')+changePct.toFixed(2)+'%) · '+barCount+' bars';
+            parts.push(line(from.x,from.y,to.x,to.y,shade,`stroke-width="${weight}" stroke-dasharray="5 3"`));
+            parts.push(text(clamp((from.x+to.x)/2,left+120,plotRight-120),clamp((from.y+to.y)/2-12,top+16,plotBottom-8),label,`fill="${shade}" font-size="13" font-weight="650" text-anchor="middle" paint-order="stroke" stroke="${palette.background}" stroke-width="4"`));
+            drawingHits.push({id:drawingId,type:drawing.type,from,to,label:'Measurement '+label});
+          }
+          if(active)parts.push(drawingHandle(from,shade),drawingHandle(to,shade));parts.push('</g>');
         } else if (drawing.type === 'trendline') {
           // Do not show a line at an earlier replay point when either endpoint
           // depends on a bar that has not been revealed yet.
@@ -376,7 +398,7 @@
           drawingHits.push({ id: drawingId, type: 'trendline', from, to, label });
         }
       }
-      if (tool === 'trendline' && pendingTrend) {
+      if (['trendline','fib','rectangle','measure'].includes(tool) && pendingTrend) {
         const from = anchorPoint(pendingTrend), to = anchorPoint(currentAnchor());
         if (from) {
           if (to) parts.push(line(from.x, from.y, to.x, to.y, palette.entry, 'data-drawing-preview="trendline" stroke-width="1.6" stroke-dasharray="5 4"'));
@@ -391,6 +413,11 @@
         priceLine(data.position.entryPrice, 'Entry ' + price(data.position.entryPrice), palette.entry, 'entry');
         priceLine(data.position.stop, 'Stop ' + price(data.position.stop), palette.stop, 'stop');
         priceLine(data.position.target, 'Target ' + price(data.position.target), palette.target, 'target');
+      }
+      const pendingOrders=Array.isArray(data.pendingOrders)?data.pendingOrders:[];
+      for(const order of pendingOrders){
+        if(!order||!Number.isFinite(order.submittedTime)||order.submittedTime>candles[cursor].time)continue;
+        priceLine(order.orderPrice,(order.side==='long'?'Buy ':'Sell ')+order.type+' · '+price(order.orderPrice),palette.level,'pending-'+order.type);
       }
       const last = bars[bars.length - 1], lastY = y(last.close), lastShade = last.close >= last.open ? settings.bullColor : settings.bearColor;
       priceLine(last.close, '', lastShade, 'last');
@@ -444,6 +471,19 @@
       }
       parts.push('</g>');
 
+      if(visiblePosition&&plotWidth>360&&Number.isFinite(data.position.qty)){
+        const p=data.position,py=y(p.entryPrice),mark=candles[cursor].close,gross=(p.side==='long'?1:-1)*(mark-p.entryPrice)*p.qty;
+        if(py>=top&&py<=plotBottom){
+          const cy=clamp(py-14,top+1,plotBottom-29),cx=plotRight-310;
+          const result=(gross>=0?'+':'')+gross.toLocaleString('en-US',{style:'currency',currency:'USD'});
+          const label=(p.side==='long'?'Long ':'Short ')+p.qty.toLocaleString('en-US',{maximumFractionDigits:6})+' · '+result;
+          parts.push(`<g data-position-pnl="true"><rect x="${coordinate(cx)}" y="${coordinate(cy)}" width="250" height="28" rx="3" fill="${palette.background}" stroke="${palette.entry}"/>`+text(cx+10,cy+19,label,`fill="${gross>=0?settings.bullColor:palette.stop}" font-size="14" font-weight="650"`)+`<title>Open mark-to-market P&amp;L before exit costs</title></g>`);
+          if(typeof options.onTradeAction==='function'){
+            for(const [action,dx,label,aria] of [['manage',252,'⋯','Manage open position'],['close',281,'×','Close open position']])parts.push(`<g class="chart-trade-control" data-trade-action="${action}" pointer-events="all" role="button" tabindex="0" aria-label="${aria}"><rect x="${coordinate(cx+dx)}" y="${coordinate(cy)}" width="28" height="28" rx="3" fill="${palette.background}" stroke="${palette.entry}"/>`+text(cx+dx+14,cy+19,label,`fill="${palette.text}" font-size="17" text-anchor="middle"`)+`<title>${aria}</title></g>`);
+          }
+        }
+      }
+
       if (crosshair && settings.crosshair && tool !== 'cursor' && hovered !== null) {
         const px = x(hovered);
         parts.push(line(px, top, px, volumeBottom, palette.crosshair, 'data-crosshair="vertical" stroke-width="1" stroke-dasharray="4 4"'));
@@ -459,7 +499,7 @@
         parts.push(text(labelX + labelWidth / 2, volumeBottom + 20, timeLabel, `fill="${palette.text}" font-size="12" font-weight="550" text-anchor="middle"`));
       }
       if (tool === 'horizontal' && keyboardPrice !== null) priceLine(keyboardPrice, 'Enter to mark ' + price(keyboardPrice), palette.entry, 'level-preview');
-      if (tool === 'trendline') {
+      if (['trendline','fib','rectangle','measure'].includes(tool)) {
         parts.push(text(left + 8, top + 17, pendingTrend ? 'Choose a second bar · Enter to place · Esc cancels' : 'Choose the first point · Arrow keys + Enter also work', `data-drawing-hint="true" fill="${palette.entry}" font-size="11" paint-order="stroke" stroke="${palette.background}" stroke-width="4" stroke-linejoin="round"`));
       }
 
@@ -548,10 +588,10 @@
       if (tool === 'horizontal') {
         if (typeof options.onDrawing === 'function') options.onDrawing({ type: 'horizontal', price: anchor.price });
         else if (typeof options.onLevel === 'function') options.onLevel(anchor.price);
-      } else if (tool === 'trendline') {
+      } else if (['trendline','fib','rectangle','measure'].includes(tool)) {
         if (!pendingTrend) pendingTrend = { time: anchor.time, price: anchor.price };
         else if (pendingTrend.time !== anchor.time) {
-          const completed = { type: 'trendline', from: { ...pendingTrend }, to: { time: anchor.time, price: anchor.price } };
+          const completed = { type: tool, from: { ...pendingTrend }, to: { time: anchor.time, price: anchor.price } };
           pendingTrend = null;
           if (typeof options.onDrawing === 'function') options.onDrawing(completed);
         }
@@ -559,6 +599,7 @@
       redraw();
     }
     function pointer(event) {
+      if(event.target?.closest?.('[data-trade-action]')){element.style.cursor='pointer';return;}
       const at = point(event);
       if (!at) return;
       if (drag && event.pointerId != null && event.pointerId !== drag.pointerId) return;
@@ -580,6 +621,7 @@
       redraw();
     }
     function down(event) {
+      if(event.target?.closest?.('[data-trade-action]'))return;
       if (event.button != null && event.button !== 0) return;
       const at = point(event);
       if (!insidePlot(at) && !onPriceAxis(at)) return;
@@ -595,6 +637,7 @@
       if (element.setPointerCapture) element.setPointerCapture(event.pointerId);
     }
     function up(event) {
+      if(event.target?.closest?.('[data-trade-action]'))return;
       if (press && event.pointerId != null && press.pointerId !== event.pointerId) return;
       const at = point(event);
       const click = press && at && Math.hypot(at.x - press.x, at.y - press.y) <= 8 && !(drag && drag.moved);
@@ -620,12 +663,13 @@
     function doubleClick(event) { if (onPriceAxis(point(event))) { event.preventDefault(); setAutoscale(true); } }
     function zoom(direction) { visible = clamp(Math.round(visible * (direction > 0 ? 1.25 : 0.8)), 20, 240); redraw(); }
     function keys(event) {
+      if(event.target?.closest?.('[data-trade-action]')){if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation?.();tradeClick(event);}return;}
       if (event.ctrlKey || event.metaKey) return;
       if (event.key === 'Escape') { event.preventDefault(); cancelDrawing(); selectDrawing(null); }
       else if (event.key === 'Delete' || event.key === 'Backspace') { if (deleteSelected()) event.preventDefault(); }
       else if (event.key === '0') { event.preventDefault(); setAutoscale(true); }
       else if (event.key === 'd' || event.key === 'D') {
-        if (drawingHits.length) { event.preventDefault(); const index = drawingHits.findIndex(hit => hit.id === selectedDrawing); selectDrawing(drawingHits[(index + 1) % drawingHits.length].id); redraw(); }
+        if (drawingHits.length) { event.preventDefault(); const unique=[...new Map(drawingHits.map(hit=>[hit.id,hit])).values()];const index = unique.findIndex(hit => hit.id === selectedDrawing); selectDrawing(unique[(index + 1) % unique.length].id); redraw(); }
       }
       else if (event.key === '+' || event.key === '=') { event.preventDefault(); if (event.altKey) scalePrice(0.8); else zoom(-1); }
       else if (event.key === '-') { event.preventDefault(); if (event.altKey) scalePrice(1.25); else zoom(1); }
@@ -662,7 +706,8 @@
         }
       }
     }
-    const listeners = { pointermove: pointer, pointerdown: down, pointerup: up, pointerleave: leave, pointercancel: cancelDrag, lostpointercapture: cancelDrag, wheel, dblclick: doubleClick, keydown: keys };
+    function tradeClick(event){const button=event.target?.closest?.('[data-trade-action]');if(!button||typeof options.onTradeAction!=='function')return;const action=button.getAttribute('data-trade-action');if(action==='manage'||action==='close'){event.preventDefault();options.onTradeAction(action);}}
+    const listeners = { click:tradeClick,pointermove: pointer, pointerdown: down, pointerup: up, pointerleave: leave, pointercancel: cancelDrag, lostpointercapture: cancelDrag, wheel, dblclick: doubleClick, keydown: keys };
     for (const [name, handler] of Object.entries(listeners)) element.addEventListener(name, handler, name === 'wheel' ? { passive: false } : undefined);
     const Observer = root.ResizeObserver || (typeof ResizeObserver === 'function' ? ResizeObserver : null);
     const observer = Observer ? new Observer(redraw) : null;

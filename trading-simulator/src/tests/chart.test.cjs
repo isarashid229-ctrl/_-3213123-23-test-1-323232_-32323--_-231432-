@@ -71,6 +71,24 @@ function finiteMarkup(html) {
   for (const match of html.matchAll(/\b(?:x|y|width|height|x1|x2|y1|y2|cx|cy)="(-?\d[^\"]*)"/g)) assert.ok(Number.isFinite(parseFloat(match[1])), match[0]);
 }
 
+test('open-position P&L and chart actions follow revealed prices while pending orders are time-gated',()=>{
+ const actions=[],data={candles:candles(50),cursor:30,settings:{},position:{side:'long',qty:2,entryPrice:104,entryTime:startTime+10*900,entryBarIndex:10},pendingOrders:[]};
+ const h=harness({data,callbacks:{onTradeAction:a=>actions.push(a)}});const markup=h.draw();assert.match(markup,/data-position-pnl="true"/);assert.match(markup,/Long 2 · \+\$6\.00/);assert.match(markup,/aria-label="Manage open position"/);assert.match(markup,/data-trade-action="close" pointer-events="all"/);
+ const control={closest:()=>({getAttribute:()=> 'manage'})},before=h.writes();for(const name of ['pointermove','pointerdown','pointerup'])h.event(name,{target:control});assert.equal(h.writes(),before,'pointer interaction must preserve the SVG action target until click');
+ h.event('click',{target:{closest:()=>({getAttribute:()=> 'manage'})}});h.event('keydown',{key:'Enter',target:{closest:()=>({getAttribute:()=> 'close'})}});assert.deepEqual(actions,['manage','close']);
+ data.position=null;data.pendingOrders=[{type:'limit',side:'long',orderPrice:104,submittedTime:startTime+20*900}];assert.match(h.draw(),/data-price-line="pending-limit"/);
+ data.pendingOrders=[{submittedTime:startTime+40*900,get orderPrice(){throw new Error('Future order price read');}}];assert.doesNotMatch(h.draw(),/pending-limit/);
+});
+
+test('Fibonacci references, zones and measurements render as editable vector drawings without reading future anchors',()=>{
+ const list=['fib','rectangle','measure'].map((type,i)=>({id:'extra-'+i,type,from:{time:startTime+10*900,price:103},to:{time:startTime+20*900,price:106}}));
+ const data={candles:candles(50),cursor:30,settings:{},drawings:list},h=harness({data});const html=h.draw();finiteMarkup(html);
+ assert.match(html,/data-drawing-type="fib"/);assert.match(html,/61\.8%/);assert.match(html,/data-drawing-type="rectangle"/);assert.match(html,/10 bars/);
+ const points=[];for(const type of ['fib','rectangle','measure']){const teaching=harness({callbacks:{onDrawing:d=>points.push(d)}});teaching.draw();teaching.chart.setTool(type);teaching.event('keydown',{key:'Enter'});teaching.event('keydown',{key:'ArrowLeft'});teaching.event('keydown',{key:'ArrowUp'});teaching.event('keydown',{key:'Enter'});}
+ assert.deepEqual(points.map(p=>p.type),['fib','rectangle','measure']);
+ data.drawings=[{id:'future-fib',type:'fib',from:{time:startTime+5*900,get price(){throw new Error('Future geometry read');}},to:{time:startTime+40*900,price:100}}];assert.doesNotMatch(h.draw(),/future-fib/);
+});
+
 test('renderer emits scalable SVG with crisp 14px labels and no raster/DPR dependency', () => {
   const one = harness({ dpr: 1 }), three = harness({ dpr: 3 });
   const first = one.draw(), second = three.draw();

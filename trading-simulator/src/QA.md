@@ -1,36 +1,49 @@
-# ReplayLab Desk 4 — verification record
+# ReplayLab Desk 5 — verification record
 
 Release date: November 21, 2026 (user-local date).
 
 ## Automated checks
 
-181 application, chart, local coach, data, time, content, guided-lab and execution tests pass. An additional 12 server tests using mocked provider responses passed before API work was paused for credential approval. No live model request was made.
+The release passes 257 automated tests: 245 application, accounting, chart, course, local-coach, data, time and guided-lab checks, plus 12 existing optional-server tests using mocked provider responses. No live model request or backend deployment was performed. Run `npm test` from `trading-simulator/src` to rebuild the self-contained HTML and run the suite.
 
 Regression coverage includes:
 
-- Immediate Buy/Sell fills, opposite-side full closes, same-side/double-submit rejection, atomic reversal and end-of-data closing.
-- Blank optional exits, manually edited brackets, refreshed default protections, risk/exposure limits, fees, slippage, next-bar activation, gaps and same-candle stop priority.
-- Backup reconstruction of actual accounting, drawing/settings/guided-progress migration, same-symbol watchlist refresh and correct new-lab totals.
-- Hidden future candles, entry/exit marker timing, manual price scaling, drawing selection, isolated chart instances and light/dark redraw.
-- All 12 labs through real engine actions, independent accounts, final checkpoint revalidation, saved completion and post-completion free practice.
-- Local course retrieval, no fake media interpretation, attachment limits, Blob persistence, text fallback, history recovery and teardown.
-- CSV validation, data-source failure preservation, public-candle continuation, stock sample metadata and New York DST transitions.
+- Market Buy/Sell, opposite-side full closing, atomic reversal, same-side rejection, optional protection, and closing at the end of a dataset.
+- Limit and stop entries that wait for subsequent bars; favorable and adverse gaps; limit-price bounds; rechecked exposure/risk; cancellation without a fee; rejected triggers; protective exits; and ambiguous-candle handling.
+- Partial-exit allocation of entry costs and original risk, preserved remaining positions, protection edits, completed-position statistics, and exact ledger reconstruction after reload/restore.
+- Persistent receipts for automatic fills, rejected entries and protective closes. Working-order type, price and quantity restore correctly.
+- Hidden-future protection for chart prices, indicators, drawings, order lines and trade markers; precise SVG rendering; keyboard and pointer drawing; price scaling; Fibonacci references, rectangles and measurements.
+- Chart action targets retain pointer events and survive pointer movement/down/up until click. Management and closing callbacks are tested separately from plot panning.
+- All 12 guided historical-chart labs through actual engine actions, independent accounts, corrective feedback, final checkpoint revalidation, saved completion and continued free practice.
+- Integrated content counts: 34 modules, 103 lessons, 170 module questions and 48 unique risk/tax cases. All module/lesson/source/case/lab references resolve; extension loading is additive and idempotent in either order.
+- The 16-week, 80-session core plan, 12-question diagnostic, 20-question capstone and eight-category readiness rubric remain intact.
+- Independent risk/tax worked-example arithmetic, five stress/planning calculators, bounded case-progress restoration, and offline coach retrieval for liquidation and wash-sale questions.
+- CSV validation, provider failures and source-pinned continuation, bundled historical-data metadata/digests, stock sizing, New York DST, backup migration, and asynchronous restore protection.
 
-## Browser checks
+## Browser checks for Desk 5
 
-- Compared the live TradingView chart layout with the user's reference screenshots and official TradingView/FX Replay guidance.
-- Bought a stock paper position from the quote button, stepped replay, reversed it, closed by opposite-side Buy, opened a fresh short and closed it manually. Account figures and fill markers updated.
-- Checked the full-width desktop terminal and both themes; corrected dark input/title contrast and default session tint.
-- Completed the protective-bracket lab: deliberately wrong answer, explanatory retry, correct answer, real 5-share bracket order and verified completion.
-- Opened the floating coach, asked about repeated stop-outs, received a relevant course explanation and official video links, reloaded and verified the saved thread.
-- Added a supplied screenshot using the actual browser file chooser. The attachment remained local and the UI identified Local guide's inability to interpret media.
-- Checked a 390px mobile frame: 375px available content width and 375px scroll width, with all navigation destinations available.
-- Checked course-to-lab links and saved course progress.
+- Inspected the public TradingView chart and order-panel workflow and its official order/replay documentation as design references.
+- Opened an AAPL market long, advanced bars, edited its stop/target, closed one share of a four-share position, verified the remaining three shares, and closed the remainder.
+- Placed a two-share limit order, confirmed no entry fee before execution, reloaded it, advanced to a qualifying later bar, and verified its fill at the stated limit. The Orders panel showed Filled.
+- Opened Manage through the chart control and closed the position through the chart's close control. Confirmed the resulting cost-adjusted receipt and empty position table.
+- Placed and cancelled another limit order, verified Cancelled in resting-entry history and no fee, then reloaded to confirm the flat account and balance persisted.
+- Corrected an SVG pointer-events inheritance issue and redraw timing that prevented chart buttons from receiving clicks. Verified actual pointer interaction after the fix.
+- Answered a risk case incorrectly, received the explanation, retried correctly, and verified the saved attempt count and passed state after reload.
+- Searched the complete curriculum for liquidation and wash sales, opened the matching lessons, completed the five-question wash-sale check at 100%, and verified per-answer explanations.
+- Checked leverage and tax-reserve results in the UI and stop-sizing results on a narrow screen. Calculator assumptions remain visible.
+- Re-exposed all eight scored recognition exercises through Labs → Recognition exercises, and opened the actual position-sizing exercise.
+- Inspected the new risk workspace in both themes. Corrected dark-table/select contrast and a mobile navigation height inherited from older styling.
+- Checked a 390px mobile frame: 375px available width and 375px scroll width for risk decisions, sizing tools, course search and a tax lesson. Navigation ends above the page heading.
+- Inspected browser error logs; no application errors remained. Browser-extension metadata messages were unrelated to the site.
+
+## Retained functionality
+
+Prior Desk 4 checks covered the guided bracket lab, actual Buy/Sell/Reverse/Close actions, coach thread persistence, and a supplied screenshot attached through the browser file chooser. The corresponding regression tests remain part of this release. Native screen recording was not initiated during QA; it requires browser support and permission.
 
 ## Practical limits
 
-Historical samples are not live market feeds. Stock intraday samples have tick-count volume; VWAP is disabled for those datasets. Daily samples are context studies. One-position paper execution does not model a real order book, borrow availability, funding, taxes, or futures multipliers.
+This is a historical educational simulator. It does not implement every TradingView feature, live exchange feeds, a brokerage connection, Pine Script, a tick order book, borrow availability, funding, actual margin liquidation, futures multipliers or options execution. Market and stop fills use modeled adverse slippage; limits obey their price cap. Requested quantities fill in full when the teaching model permits execution. Real queue position, partial entry fills, exchange latency and intrabar sequencing are unknown from OHLC data. Separate risk exercises explain those omissions.
 
-Native screen capture depends on browser permissions/support and was not initiated during QA. Server-backed web research and screenshot/video interpretation are not enabled or live-tested. Local feedback is clearly labeled and never presented as a connected AI model.
+One position or one pending entry is allowed; entry notional is capped at 1× equity. The risk calculators are hypothetical tools, and the tax-reserve calculator is not a tax return or estimated-payment determination. Tax lessons concern U.S. federal concepts and do not replace individual product, state or residency review.
 
-The course is a structured practice program; completion does not certify professional status or promise profitability.
+Local guide provides course retrieval and replay-context explanations. It does not perform live web research or interpret attached media; the optional server component remains undeployed. Completion records knowledge and practice, not professional certification or a promise of profitability.

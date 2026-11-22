@@ -24,7 +24,7 @@
     const documents = [];
     for (const module of academy.modules || []) for (const lesson of module.lessons || []) for (const section of lesson.sections || []) {
       const text = [section.text, ...(section.bullets || []), section.example ? 'Worked example: ' + section.example : ''].filter(Boolean).join('\n');
-      documents.push({ id: lesson.id + ':' + section.heading, title: section.heading, sourceTitle: module.title + ' · ' + lesson.title, text, moduleId: module.id, labId: module.labId, takeaway: lesson.takeaway, url: '#course/' + module.id, keywords: [module.title, lesson.title, section.heading, ...(module.skills || [])].join(' ') });
+      documents.push({ id: lesson.id + ':' + section.heading, title: section.heading, sourceTitle: module.title + ' · ' + lesson.title, text, moduleId: module.id, labId: lesson.practice?.guidedLabId||module.guidedLabId||module.labId, takeaway: lesson.takeaway, url: '#course/' + module.id, keywords: [module.title, lesson.title, section.heading, ...(module.skills || [])].join(' ') });
     }
     for (const guide of guided.items || []) for (const key of ['seeIt', 'tryIt', 'reviewIt']) {
       const part = guide.lesson?.[key]; if (!part) continue;
@@ -46,7 +46,13 @@
       [/\b(revenge|overtrad|bored)\b/, 'overtrade psychology discipline'],
       [/\b(losing|losses|poor results)\b/, 'net expectancy risk review'],
       [/\b(indicator|ema|average|vwap)\b/, 'indicator moving average volume'],
-      [/\b(start|beginner|next|first)\b/, 'foundation plan basics']
+      [/\b(start|beginner|next|first)\b/, 'foundation plan basics'],
+      [/\b(liquidated|liquidation|margin|leverage|leveraged)\b/, 'liquidation maintenance collateral margin leverage'],
+      [/\b(sweep|hunt|hunted|wicked)\b/, 'stop sweep evidence volatility'],
+      [/\b(tax|taxes|irs|deduct|deduction|475|1099)\b/, 'tax records reporting IRS'],
+      [/\b(wash|harvest|harvesting)\b/, 'wash sale loss replacement basis'],
+      [/\b(prop|challenge|funded|payout)\b/, 'prop drawdown floor payout'],
+      [/\b(outage|frozen|disconnect|hacked|scam)\b/, 'operational outage account security']
     ];
     for (const [pattern, expansion] of synonyms) if (pattern.test(query)) query += ' ' + expansion;
     const words = tokens(query);

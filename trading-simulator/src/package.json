@@ -1,8 +1,8 @@
 {
   "name": "replaylab-academy",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "private": true,
-  "description": "Chart-first historical replay, paper trading, practical lessons, guided labs, and a floating coach",
+  "description": "Historical trading desk, realistic paper-order workflows, risk decision labs, and a sourced trading and U.S. tax curriculum",
   "scripts": {
     "build": "node build.cjs",
     "test": "node build.cjs && node --test tests/*.test.cjs"
